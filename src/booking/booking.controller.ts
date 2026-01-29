@@ -1,0 +1,13 @@
+import { Controller, Get } from "@nestjs/common";
+import { BookingService } from "./booking.service";
+
+@Controller("booking")
+export class BookingController {
+  constructor(private readonly bookingService: BookingService) {}
+
+  //get all booking days
+  @Get()
+  getAllBookedDays() {
+    return this.bookingService.getAllBookDays();
+  }
+}
