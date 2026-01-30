@@ -14,58 +14,76 @@ import { MonthEntity } from "src/entities/entity/month.entity";
 export class CalendarService {
   constructor(
     @InjectRepository(MonthEntity)
-    private readonly yearRepository: Repository<MonthEntity>,
+    private readonly monthRepo: Repository<MonthEntity>,
 
     @InjectRepository(DayEntity)
     private readonly dayRepository: Repository<DayEntity>,
   ) {}
 
-  //GET all calendar days
+  //GET all calendar days for a specific month
   async getAllCalendarDay(body: CalendarDto) {
     const { year, month } = body;
+
     if (!year || !month) {
-      throw new BadRequestException();
+      throw new BadRequestException("Year and month are required");
     }
-    const res = await this.yearRepository.find({
+
+    // Find the month with its days
+    const monthData = await this.monthRepo.findOne({
       where: {
         year: year,
         month: month,
       },
       relations: { days: true },
       select: {
-        createdAt: false,
-        days: {
-          createdAt: false,
-          updatedAt: false,
-          date: true,
-          id: true,
-          isBooked: true,
-          month: false,
-          price: true,
-        },
         id: true,
+        year: true,
         month: true,
         price: true,
-        updatedAt: false,
-        year: true,
+        days: {
+          id: true,
+          date: true,
+          isBooked: true,
+          price: true,
+        },
       },
       order: {
-        createdAt: "ASC",
+        days: {
+          date: "ASC",
+        },
       },
     });
-    if (res.length === 0) {
-      return {
-        success: false,
-        satusCode: 204,
-        data: res,
-      };
-    } else
+
+    if (!monthData) {
+      // You might want to create the month if it doesn't exist, or return empty
       return {
         success: true,
         statusCode: 200,
-        data: res,
-        total: res.length,
+        data: {
+          id: null,
+          year: year,
+          month: month,
+          price: null,
+          days: [],
+        },
       };
+    }
+
+    // If days array exists but might be empty or null
+    const formattedData = {
+      id: monthData.id,
+      year: monthData.year,
+      month: monthData.month,
+      price: monthData.price,
+      days: monthData.days || [],
+    };
+
+    return {
+      success: true,
+      statusCode: 200,
+      data: formattedData,
+      total: formattedData.days.length,
+    };
   }
 
   //change calendar day or month price

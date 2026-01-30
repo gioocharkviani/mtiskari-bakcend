@@ -15,6 +15,6 @@ async function bootstrap() {
   });
 
   console.log(`aplication v1 is running , running time ${new Date()}`);
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();
