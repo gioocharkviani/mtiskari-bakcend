@@ -9,9 +9,9 @@ export class guestEntity {
   firstName: string;
   @Column()
   lastName: string;
-  @Column()
+  @Column({ unique: true })
   phone: string;
-  @Column()
+  @Column({ unique: true })
   email: string;
   @Column("int", { nullable: true, default: 0 })
   totalBooking?: number;

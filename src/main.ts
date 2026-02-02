@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
-import { VersioningType } from "@nestjs/common";
+import { ValidationPipe, VersioningType } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +13,7 @@ async function bootstrap() {
     defaultVersion: "1",
     type: VersioningType.URI,
   });
+  app.useGlobalPipes(new ValidationPipe());
 
   console.log(`aplication v1 is running , running time ${new Date()}`);
   await app.listen(process.env.PORT ?? 3001);

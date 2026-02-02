@@ -14,7 +14,7 @@ export class DayEntity {
   id: number;
   @Column("int", { nullable: true, default: null })
   price: number;
-  @Column()
+  @Column("date", { nullable: false, unique: true })
   date: Date;
   @Column()
   isBooked: boolean;

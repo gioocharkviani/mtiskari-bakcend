@@ -1,38 +1,39 @@
+import {
+  IsDateString,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from "class-validator";
+import { CreateDateColumn, UpdateDateColumn } from "typeorm";
+
 export class NewBooking {
-  userId?: number;
-  guestId?: number;
+  @IsNotEmpty()
+  @IsString()
   firstName: string;
+  @IsNotEmpty()
+  @IsString()
   lastName: string;
+  @IsNotEmpty()
+  @IsString()
   phone: string;
-  email: string;
-  checkInDate: Date;
-  checkOutDate: Date;
-  nightsCount: number;
-  guestsCount: number;
+  @IsNotEmpty()
+  @IsNumber()
   totalPrice: number;
-  basePrice?: number;
-  bookingStatus: BookingStatus = "PENDING";
-  specialRequests?: string;
-  paymentMethod?: "CREDIT_CARD" | "PAYPAL" | "STRIPE" | "BANK_TRANSFER";
-  paymentStatus?: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
-}
-
-// Standard status enum
-export type BookingStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "CANCELLED"
-  | "COMPLETED"
-  | "REJECTED"
-  | "REFUNDED";
-
-export enum BookingStatusEnum {
-  PENDING = "PENDING",
-  CONFIRMED = "CONFIRMED",
-  CANCELLED = "CANCELLED",
-  COMPLETED = "COMPLETED",
-  REJECTED = "REJECTED",
-  REFUNDED = "REFUNDED",
-  EXPIRED = "EXPIRED",
-  MODIFIED = "MODIFIED",
+  @IsNotEmpty()
+  @IsNumber()
+  guestCount: number;
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+  @IsNotEmpty()
+  @IsDateString()
+  checkInDate: string;
+  @IsNotEmpty()
+  @IsDateString()
+  checkOutDate: string;
+  @CreateDateColumn()
+  createdAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
