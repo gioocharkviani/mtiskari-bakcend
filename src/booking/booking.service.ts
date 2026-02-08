@@ -11,6 +11,7 @@ import { guestEntity } from "src/entities/entity/guest.entity";
 import { MonthEntity } from "src/entities/entity/month.entity";
 import { QueryBuilder, Repository } from "typeorm";
 import { NewBooking } from "./dto/booking.dto";
+import { log } from "console";
 
 @Injectable()
 export class BookingService {
@@ -27,22 +28,6 @@ export class BookingService {
     @InjectRepository(bookingEntity)
     private readonly bookingRepository: Repository<bookingEntity>,
   ) {}
-
-  // HELPER FN FOR CHECK DATES BETWEEN BOOKING DATES
-  private getAllNewBookingDays(startDate: Date, endDate: Date): string[] {
-    const dates: string[] = [];
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    // Loop through each date
-    const current = new Date(start);
-    while (current <= end) {
-      const strDate = current.toISOString().split("T")[0];
-      dates.push(strDate);
-      current.setDate(current.getDate() + 1);
-    }
-    return dates;
-  }
 
   //NEW BOOKING FN
   async newBooking(newBookingDto: NewBooking) {
@@ -88,12 +73,14 @@ export class BookingService {
     //all requested booking days
     const reqBookingDays = this.getAllNewBookingDays(checkIn, checkOut);
 
+    //check if some days is booked
+    const checkBookedDays = this.checkBookedDays(reqBookingDays);
+
     //calculate total totalNights
     const totalNightCalc = reqBookingDays.length - 1;
 
     // Check all requested booking days status
-
-    reqBookingDays.forEach((i) => {
+    const saveBookedDay = await reqBookingDays.forEach((i) => {
       this.dayRepository.save({
         date: i,
         isBooked: true,
@@ -110,7 +97,33 @@ export class BookingService {
       totalPrice: totalPrice,
     };
 
-    return reqBookingDays;
+    const saveBooking = this.bookingRepository.save(newBooking);
+
+    return saveBookedDay;
   }
   //NEW BOOKING FN
+
+  //---------------------------------------------------------------------HELPER FUNCTIONS
+
+  // HELPER FN FOR CHECK DATES BETWEEN BOOKING DATES
+  private getAllNewBookingDays(startDate: Date, endDate: Date): string[] {
+    const dates: string[] = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    // Loop through each date
+    const current = new Date(start);
+    while (current <= end) {
+      const strDate = current.toISOString().split("T")[0];
+      dates.push(strDate);
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  }
+
+  //CHECK IF DAY IS BOOKED
+
+  private checkBookedDays(dates: string[]) {
+    console.log(dates);
+  }
+  //---------------------------------------------------------------------HELPER FUNCTIONS
 }
