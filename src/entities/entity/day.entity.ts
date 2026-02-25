@@ -15,11 +15,11 @@ export class DayEntity {
   @Column("int", { nullable: true, default: null })
   price: number;
   @Column("date", { nullable: false, unique: true })
-  date: Date;
+  date: string;
   @Column()
   isBooked: boolean;
-  @ManyToOne(() => MonthEntity, (month) => month.days)
-  month: MonthEntity;
+  @ManyToOne(() => MonthEntity, (month) => month.id)
+  month: number;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()

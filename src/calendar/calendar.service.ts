@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DayEntity } from "src/entities/entity/day.entity";
-import { Repository } from "typeorm";
+import { Repository, Between } from "typeorm";
 import { CalendarDto } from "./dto/calendar.dto";
 import { MonthEntity } from "src/entities/entity/month.entity";
 
@@ -13,7 +13,7 @@ import { MonthEntity } from "src/entities/entity/month.entity";
 export class CalendarService {
   constructor(
     @InjectRepository(MonthEntity)
-    private readonly monthRepo: Repository<MonthEntity>,
+    private readonly monthRepository: Repository<MonthEntity>,
 
     @InjectRepository(DayEntity)
     private readonly dayRepository: Repository<DayEntity>,
@@ -21,79 +21,90 @@ export class CalendarService {
 
   //GET all calendar days for a specific month
   async getAllCalendarDay(body: CalendarDto) {
-    const { year, month } = body;
+    try {
+      const { year, month } = body;
 
-    if (!year || !month) {
-      throw new BadRequestException("Year and month are required");
-    }
+      // Validate input
+      if (!year || !month) {
+        throw new BadRequestException("Year and month are required");
+      }
 
-    // Find the month with its days
-    const monthData = await this.monthRepo.findOne({
-      where: {
-        year: year,
-        month: month,
-      },
-      relations: { days: true },
-      select: {
-        id: true,
-        year: true,
-        month: true,
-        price: true,
-        days: {
+      if (month < 1 || month > 12) {
+        throw new BadRequestException("Month must be between 1 and 12");
+      }
+
+      // Calculate month start and end dates
+      const startDateOfMonth = new Date(year, month - 1, 1);
+      const endDateOfMonth = new Date(year, month, 0);
+
+      // Find the month record
+      const monthRecord = await this.monthRepository.findOne({
+        where: {
+          month: month,
+          year: year,
+        },
+        relations: {
+          days: true,
+        },
+        select: {
           id: true,
-          date: true,
-          isBooked: true,
+          month: true,
+          year: true,
           price: true,
+          days: {
+            id: true,
+            date: true,
+            price: true,
+            isBooked: true,
+          },
         },
-      },
-      order: {
-        days: {
-          date: "ASC",
-        },
-      },
-    });
+      });
 
-    if (!monthData) {
-      // You might want to create the month if it doesn't exist, or return empty
+      // If no month record exists, return empty data structure
+      if (!monthRecord) {
+        return {
+          success: true,
+          statusCode: 200,
+          message: "No data found for this month",
+          data: {
+            monthInfo: null,
+            days: [],
+            totalDays: 0,
+          },
+          total: 0,
+        };
+      }
+
+      const totalDaysInMonth = endDateOfMonth.getDate();
+
       return {
         success: true,
         statusCode: 200,
+        message: "Calendar data retrieved successfully",
         data: {
-          id: null,
-          year: year,
-          month: month,
-          price: null,
-          days: [],
+          monthInfo: {
+            id: monthRecord.id,
+            month: monthRecord.month,
+            year: monthRecord.year,
+            price: monthRecord.price,
+          },
+          days: monthRecord.days || [],
+          totalDays: totalDaysInMonth,
+          bookedDays:
+            monthRecord.days?.filter((day) => day.isBooked).length || 0,
+          availableDays:
+            monthRecord.days?.filter((day) => !day.isBooked).length || 0,
         },
+        total: monthRecord.days?.length || 0,
       };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error("Error in getAllCalendarDay:", error);
+      throw new BadRequestException(
+        error.message || "Failed to retrieve calendar data",
+      );
     }
-
-    // If days array exists but might be empty or null
-    const formattedData = {
-      id: monthData.id,
-      year: monthData.year,
-      month: monthData.month,
-      price: monthData.price,
-      days: monthData.days || [],
-    };
-
-    return {
-      success: true,
-      statusCode: 200,
-      data: formattedData,
-      total: formattedData.days.length,
-    };
-  }
-
-  //change calendar day or month price
-  async updateCalendarDay(dayId: number, updateData: Partial<DayEntity>) {
-    const day = await this.dayRepository.find({
-      where: { id: dayId },
-    });
-    if (!day) {
-      throw new NotFoundException(`Day with ID ${dayId} not found`);
-    }
-    Object.assign(day, updateData);
-    return await this.dayRepository.save(updateData);
   }
 }

@@ -1,14 +1,15 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { bookingEntity } from "src/entities/entity/booking.entity";
 import { DayEntity } from "src/entities/entity/day.entity";
 import { guestEntity } from "src/entities/entity/guest.entity";
-import { MonthEntity } from "src/entities/entity/month.entity";
-import { QueryBuilder, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { NewBooking } from "./dto/booking.dto";
+import { MonthEntity } from "src/entities/entity/month.entity";
 
 @Injectable()
 export class BookingService {
+  private readonly logger = new Logger("logger");
   constructor(
     @InjectRepository(MonthEntity)
     private readonly monthRepository: Repository<MonthEntity>,
@@ -62,7 +63,9 @@ export class BookingService {
         guestId,
         guestCount,
       );
-
+      this.logger.log(
+        `new booking created by ${guestId} : checkIn ${checkIn} , checkOut:${checkOut}`,
+      );
       return newBooking;
     } catch (error) {
       if (error instanceof ConflictException) {
@@ -79,11 +82,10 @@ export class BookingService {
   private validateDates(checkIn: string, checkOut: string) {
     const chIn = new Date(checkIn);
     const chOut = new Date(checkOut);
-    const today = new Date();
+    const isToday = new Date();
     if (chIn >= chOut) {
       throw new ConflictException("Check-out date must be after check-in date");
-    }
-    if (chIn < today) {
+    } else if (chIn < isToday) {
       throw new ConflictException("Check-in date cannot be in the past");
     }
     return { checkIn, checkOut };
@@ -118,6 +120,7 @@ export class BookingService {
     const dates: string[] = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
+    end.setDate(end.getDate() - 1);
     // Loop through each date
     const current = new Date(start);
     while (current <= end) {
@@ -144,6 +147,7 @@ export class BookingService {
     }
   }
 
+  //CREATE NEW BOOKING
   private async createBooking(
     checkIn: string,
     checkOut: string,
@@ -180,20 +184,62 @@ export class BookingService {
     return await this.bookingRepository.save(newBooking);
   }
 
-  //save all requested days
-  private async saveBookedDay(dates: string[]) {
-    const daysToInsert = dates.map((date) => ({
-      date,
-      isBooked: true,
-    }));
-    const saveDays = await this.dayRepository
-      .createQueryBuilder()
-      .insert()
-      .into(DayEntity)
-      .values(daysToInsert)
-      .orIgnore()
-      .execute();
-    return saveDays;
+  //save all requested days with month associations
+  private async saveBookedDay(dates: string[]): Promise<any> {
+    const daysToInsert: Partial<DayEntity>[] = [];
+    const monthCache = new Map<string, number>();
+
+    for (const dateStr of dates) {
+      const date = new Date(dateStr);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const monthKey = `${year}-${month}`;
+      let monthId = monthCache.get(monthKey);
+
+      if (!monthId) {
+        let monthRecord = await this.monthRepository.findOne({
+          where: {
+            year: year,
+            month: month,
+          },
+        });
+
+        if (!monthRecord) {
+          monthRecord = this.monthRepository.create({
+            year: year,
+            month: month,
+          });
+          monthRecord = await this.monthRepository.save(monthRecord);
+          console.log(`Created new month: ${year}-${month}`);
+        }
+
+        monthId = monthRecord.id;
+        monthCache.set(monthKey, monthId);
+      }
+
+      daysToInsert.push({
+        date: dateStr,
+        isBooked: true,
+        month: monthId,
+      });
+    }
+
+    console.log(monthCache);
+
+    if (daysToInsert.length > 0) {
+      const saveDays = await this.dayRepository
+        .createQueryBuilder()
+        .insert()
+        .into(DayEntity)
+        .values(daysToInsert)
+        .orIgnore()
+        .execute();
+
+      // console.log(`Saved ${daysToInsert.length} days`);
+      return saveDays;
+    }
+
+    return { generatedMaps: [], raw: [] };
   }
   //---------------------------------------------------------------------HELPER FUNCTIONS
 }
