@@ -20,6 +20,8 @@ export class DayEntity {
   isBooked: boolean;
   @ManyToOne(() => MonthEntity, (month) => month.id)
   month: number;
+  @Column({ default: false })
+  isBlocked: boolean;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()

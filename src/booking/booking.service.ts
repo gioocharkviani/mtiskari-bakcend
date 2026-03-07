@@ -224,8 +224,6 @@ export class BookingService {
       });
     }
 
-    console.log(monthCache);
-
     if (daysToInsert.length > 0) {
       const saveDays = await this.dayRepository
         .createQueryBuilder()
