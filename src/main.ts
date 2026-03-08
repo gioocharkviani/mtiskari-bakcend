@@ -13,7 +13,14 @@ async function bootstrap() {
     defaultVersion: "1",
     type: VersioningType.URI,
   });
-  app.useGlobalPipes(new ValidationPipe());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   console.log(`aplication v1 is running , running time ${new Date()}`);
   await app.listen(process.env.PORT ?? 3001);

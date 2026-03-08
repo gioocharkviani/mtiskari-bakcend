@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Query } from "@nestjs/common";
 import { CalendarService } from "./calendar.service";
 import { CalendarDto } from "./dto/calendar.dto";
 import { UpdateMonthDto } from "./dto/updateMonth.dto";
+import { UpdateDaysDtoArr } from "./dto/updateDay.dto";
 
 @Controller("calendar")
 export class CaldendarController {
@@ -16,5 +17,11 @@ export class CaldendarController {
   @Patch("month/:id")
   changeMonthPrice(@Param("id") id: number, @Body() body: UpdateMonthDto) {
     return this.calendarService.changeMonthPrice(id, body.price);
+  }
+
+  //Change day info
+  @Patch("days")
+  changeDaysInfo(@Body() body: UpdateDaysDtoArr) {
+    return body;
   }
 }
