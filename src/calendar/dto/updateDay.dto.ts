@@ -1,34 +1,25 @@
-import { Type } from "class-transformer";
 import {
-  IsArray,
   IsBoolean,
+  IsDateString,
+  isNumber,
   IsNumber,
   IsOptional,
   IsString,
-  ValidateNested,
 } from "class-validator";
 
 export class UpdateDaysDto {
-  @IsOptional()
   @IsString()
-  date: string;
-
+  date!: string;
   @IsOptional()
   @IsNumber()
-  price: number;
-
+  price?: number;
   @IsOptional()
   @IsBoolean()
-  isBooked: boolean;
-
+  isBooked?: boolean;
   @IsOptional()
   @IsBoolean()
-  isBlocked: boolean;
-}
-
-export class UpdateDaysDtoArr {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => UpdateDaysDto)
-  days: UpdateDaysDto[];
+  isBlocked?: boolean;
+  @IsOptional()
+  @IsNumber()
+  monthId?: number;
 }

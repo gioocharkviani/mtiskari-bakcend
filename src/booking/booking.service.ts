@@ -69,7 +69,7 @@ export class BookingService {
       return newBooking;
     } catch (error) {
       if (error instanceof ConflictException) {
-        throw error;
+        throw error; // Re-throw the specific conflict message
       }
       throw new ConflictException(`Booking failed: ${error.message}`);
     }
@@ -79,9 +79,9 @@ export class BookingService {
   //---------------------------------------------------------------------HELPER FUNCTIONS
 
   //VALIDATE check-in or out dates
-  private validateDates(checkIn: string, checkOut: string) {
-    const chIn = new Date(checkIn);
-    const chOut = new Date(checkOut);
+  private validateDates(checkIn?: string, checkOut?: string) {
+    const chIn = new Date(checkIn || "");
+    const chOut = new Date(checkOut || "");
     const isToday = new Date();
     if (chIn >= chOut) {
       throw new ConflictException("Check-out date must be after check-in date");
@@ -93,11 +93,11 @@ export class BookingService {
 
   //CREATE OR FIND guest
   private async findOrCreateGuest(
-    email: string,
-    phone: string,
-    firstName: string,
-    lastName: string,
-  ): Promise<string> {
+    email?: string,
+    phone?: string,
+    firstName?: string,
+    lastName?: string,
+  ): Promise<number> {
     let guest = await this.guestRepository.findOne({
       where: [{ email }, { phone }],
     });
@@ -111,15 +111,14 @@ export class BookingService {
       });
       guest = await this.guestRepository.save(guest);
     }
-
     return guest.id;
   }
 
   // HELPER fn for check all days between booking days
-  private getAllNewBookingDays(startDate: string, endDate: string): string[] {
+  private getAllNewBookingDays(startDate?: string, endDate?: string): string[] {
     const dates: string[] = [];
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = new Date(startDate || "");
+    const end = new Date(endDate || "");
     end.setDate(end.getDate() - 1);
     // Loop through each date
     const current = new Date(start);
@@ -149,11 +148,11 @@ export class BookingService {
 
   //CREATE NEW BOOKING
   private async createBooking(
-    checkIn: string,
-    checkOut: string,
-    totalPrice: number,
-    guestId: string,
-    guestCount: number,
+    checkIn?: string,
+    checkOut?: string,
+    totalPrice?: number,
+    guestId?: number,
+    guestCount?: number,
   ) {
     const checkBookingDates = await this.bookingRepository
       .createQueryBuilder("date")

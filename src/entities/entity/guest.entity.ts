@@ -3,18 +3,18 @@ import { bookingEntity } from "./booking.entity";
 
 @Entity("guest")
 export class guestEntity {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
   @Column()
-  firstName: string;
+  firstName?: string;
   @Column()
-  lastName: string;
+  lastName?: string;
   @Column({ unique: true })
-  phone: string;
+  phone?: string;
   @Column({ unique: true })
-  email: string;
+  email?: string;
   @Column("int", { nullable: true, default: 0 })
   totalBooking?: number;
   @OneToMany(() => bookingEntity, (booking) => booking.id)
-  bookings: bookingEntity[];
+  bookings?: bookingEntity[];
 }

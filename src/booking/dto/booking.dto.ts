@@ -5,35 +5,30 @@ import {
   IsNumber,
   IsString,
 } from "class-validator";
-import { CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 export class NewBooking {
   @IsNotEmpty()
   @IsString()
-  firstName: string;
+  firstName?: string;
   @IsNotEmpty()
   @IsString()
-  lastName: string;
+  lastName?: string;
   @IsNotEmpty()
   @IsString()
-  phone: string;
+  phone?: string;
   @IsNotEmpty()
   @IsNumber()
-  totalPrice: number;
+  totalPrice?: number;
   @IsNotEmpty()
   @IsNumber()
-  guestCount: number;
+  guestCount?: number;
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+  email?: string;
   @IsNotEmpty()
   @IsDateString()
-  checkInDate: string;
+  checkInDate?: string;
   @IsNotEmpty()
   @IsDateString()
-  checkOutDate: string;
-  @CreateDateColumn()
-  createdAt: Date;
-  @UpdateDateColumn()
-  updatedAt: Date;
+  checkOutDate?: string;
 }

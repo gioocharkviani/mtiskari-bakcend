@@ -6,9 +6,9 @@ import { TypeOrmModule } from "@nestjs/typeorm";
     TypeOrmModule.forRoot({
       type: "mysql",
       host: "localhost",
-      port: 3306,
+      port: 3333,
       username: "root",
-      password: "",
+      password: "gioocharkviani",
       database: "mtiskari",
       entities: [__dirname + "/../**/*.entity{.ts,.js}"],
       synchronize: true,

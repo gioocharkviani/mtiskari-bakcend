@@ -18,28 +18,28 @@ export enum BookingStatus {
 @Entity("booking")
 export class bookingEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
   @Column({ nullable: false })
-  guestId: string;
+  guestId!: number;
   @Column({ nullable: false })
-  checkInDate: string;
+  checkInDate?: string;
   @Column({ nullable: false })
-  checkOutDate: string;
+  checkOutDate?: string;
   @Column("int")
-  totalNights: number;
+  totalNights?: number;
   @Column("int")
-  guestCount: number;
+  guestCount?: number;
   @Column("int")
-  totalPrice: number;
-  @CreateDateColumn()
-  createdAt: Date;
-  @UpdateDateColumn()
-  updatedAt: Date;
+  totalPrice?: number;
+  @CreateDateColumn({ nullable: true })
+  createdAt?: Date;
+  @UpdateDateColumn({ nullable: true })
+  updatedAt?: Date;
   @Column({
     nullable: true,
     type: "enum",
     enum: BookingStatus,
     default: BookingStatus.PENDING,
   })
-  bookingStatus: BookingStatus;
+  bookingStatus?: BookingStatus;
 }

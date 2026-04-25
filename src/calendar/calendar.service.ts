@@ -1,13 +1,18 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DayEntity } from "src/entities/entity/day.entity";
-import { Repository, Between } from "typeorm";
+import { Repository } from "typeorm";
 import { CalendarDto } from "./dto/calendar.dto";
 import { MonthEntity } from "src/entities/entity/month.entity";
+import { UpdateDaysDto } from "./dto/updateDay.dto";
+import { UpdateMonthDto } from "./dto/updateMonth.dto";
+import { get } from "http";
 
 @Injectable()
 export class CalendarService {
@@ -45,33 +50,14 @@ export class CalendarService {
         relations: {
           days: true,
         },
-        select: {
-          id: true,
-          month: true,
-          year: true,
-          price: true,
-          days: {
-            id: true,
-            date: true,
-            price: true,
-            isBlocked: true,
-            isBooked: true,
-          },
-        },
       });
 
       // If no month record exists, return empty data structure
       if (!monthRecord) {
         return {
-          success: true,
-          statusCode: 200,
-          message: "No data found for this month",
-          data: {
-            monthInfo: null,
-            days: [],
-            totalDays: 0,
-          },
-          total: 0,
+          status: true,
+          statusCode: 400,
+          message: "Calendar data not found",
         };
       }
 
@@ -102,17 +88,15 @@ export class CalendarService {
         throw error;
       }
       console.error("Error in getAllCalendarDay:", error);
-      throw new BadRequestException(
-        error.message || "Failed to retrieve calendar data",
-      );
+      throw new BadRequestException("Failed to retrieve calendar data");
     }
   }
 
   // Change month price
-  async changeMonthPrice(id: number, price: number) {
+  async changeMonthPrice({ month, year, price }: UpdateMonthDto) {
     try {
-      if (!id) {
-        throw new BadRequestException("Month ID is required");
+      if (!month || !year) {
+        throw new BadRequestException("Month or Year is required");
       }
 
       if (price === undefined || price === null) {
@@ -123,17 +107,26 @@ export class CalendarService {
         throw new BadRequestException("Price cannot be negative");
       }
 
-      const month = await this.monthRepository.findOne({
-        where: { id },
+      const MONTH = await this.monthRepository.findOne({
+        where: {
+          month: month,
+          year: year,
+        },
       });
 
-      if (!month) {
-        throw new NotFoundException(`Month with ID ${id} not found`);
+      if (!MONTH) {
+        const saveMonthRecord = this.monthRepository.create({
+          price: price,
+          month: month,
+          year: year,
+        });
+
+        return this.monthRepository.save(saveMonthRecord);
       }
 
-      month.price = price;
+      MONTH.price = price;
 
-      const updatedMonth = await this.monthRepository.save(month);
+      const updatedMonth = await this.monthRepository.save(MONTH);
 
       return {
         success: true,
@@ -154,18 +147,61 @@ export class CalendarService {
         throw error;
       }
       console.error("Error in changeMonthPrice:", error);
-      throw new BadRequestException(
-        error.message || "Failed to update month price",
-      );
+      throw new BadRequestException("Failed to update month price");
     }
   }
 
   //change each days info price or status
-  async changeDaysInfo(id?: number, price?: number, isBlocked?: boolean) {
-    //TODO აქ იქნება შემდეგნაირი ლოგიკა რექვესთში იქნება მასივი სადაც იქნება დღეები ობჯექთში და შემოწმდება თითოეული დღე და თუ დღეს ფასი ან რაიმე სტატუსი  ისეთი ექნება რომელიც დეფოლტათ აქვს ის დღე არ შეინახება დანარჩენები შეინახება. ასევე თუ დღე უკვე დაჯავშნილია მოხდება შემდეგნაირი ცხვლილება მასზე .  თუ დაჯავშნილია და ჯავშანი გაუქმდა ასევე უნდა წაიშალოს ის დღეები ბაზიდან ასევე გასუფთავდეს ჯავშანი . წაიშალოს ან შეეცვალოს სტატუსი . ასევე დღეებზე წაიშალოს ან შეიცვალოს ბუქინგის სტატუსი.
-    //TODO ასევე შევქმნათ მეილის ფუნქციონალი მომხმარებლისთვის და ასევე სასტუმროს მფლობელისთვის რომ გაიგოს ჯავშნის შესახებ
-    //TODO ყველა საჭირო ui ელემენტის ცვლილება ადმინიდან ფოტოების სერვისი გალერიისთვის ბექგრაუნდის კონტროლი , და სხვადასხვა ღონისძიებების დამატება .
-    //TODO ავტორიზაციის ფორმა ადმინისთვის რადგან სხვამ ვერ შეძლოს რაიმე ცვლილებების შეტანა საიტის ბექში.
-    //TODO დაცული როუტების დამატება და ქორსებით დაცვა ბექის.
+  async changeDaysInfo(data: UpdateDaysDto[]) {
+    try {
+      if (data.length == 0) {
+        throw new HttpException("Days Data not found", HttpStatus.NO_CONTENT);
+      }
+      const processedData: UpdateDaysDto[] = await this.getAllReqDays(data);
+
+      const saveData = await this.dayRepository.save(processedData);
+      return processedData;
+    } catch (error) {
+      return error;
+    }
+  }
+  //---------------------------------------------------HELPER FUNCTIONS---------------
+
+  private async getAllReqDays(data: UpdateDaysDto[]) {
+    const newData: UpdateDaysDto[] = [];
+    for (let index = 0; index <= data.length - 1; index++) {
+      const DATE: UpdateDaysDto = data[index];
+      const dateString = new Date(data[index].date).toISOString().split("T")[0];
+      const existingRecords = await this.dayRepository.find({
+        where: { date: dateString },
+      });
+      if (existingRecords.length > 0) {
+        const updatedRecord = Object.assign(existingRecords[0], data[index]);
+        newData.push(updatedRecord);
+      } else {
+        const day: string = data[index].date;
+        const getMonth = new Date(day).getMonth();
+        const getYear = new Date(day).getFullYear();
+        const findMonthRecord = await this.monthRepository.findOne({
+          where: {
+            month: getMonth,
+            year: getYear,
+          },
+        });
+
+        if (!findMonthRecord) {
+          const createNewMonthRecord = await this.monthRepository.save({
+            month: getMonth,
+            year: getYear,
+          });
+          console.log("CREATE MONT RECORD", createNewMonthRecord);
+          DATE.monthId = createNewMonthRecord.id;
+        }
+        DATE.monthId = findMonthRecord?.id;
+        newData.push(DATE);
+      }
+    }
+
+    return newData;
   }
 }

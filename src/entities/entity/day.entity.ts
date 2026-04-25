@@ -11,19 +11,19 @@ import { MonthEntity } from "./month.entity";
 @Entity("days")
 export class DayEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
   @Column("int", { nullable: true, default: null })
-  price: number;
+  price?: number;
   @Column("date", { nullable: false, unique: true })
-  date: string;
+  date?: string;
   @Column()
-  isBooked: boolean;
+  isBooked?: boolean;
   @ManyToOne(() => MonthEntity, (month) => month.id)
-  month: number;
+  month?: number;
   @Column({ default: false })
-  isBlocked: boolean;
-  @CreateDateColumn()
-  createdAt: Date;
-  @UpdateDateColumn()
-  updatedAt: Date;
+  isBlocked?: boolean;
+  @CreateDateColumn({ nullable: true })
+  createdAt?: Date;
+  @UpdateDateColumn({ nullable: true })
+  updatedAt?: Date;
 }
