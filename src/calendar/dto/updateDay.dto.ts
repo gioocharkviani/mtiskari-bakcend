@@ -21,5 +21,5 @@ export class UpdateDaysDto {
   isBlocked?: boolean;
   @IsOptional()
   @IsNumber()
-  monthId?: number;
+  month?: number;
 }

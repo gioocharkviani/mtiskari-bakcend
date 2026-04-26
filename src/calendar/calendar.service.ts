@@ -12,7 +12,6 @@ import { CalendarDto } from "./dto/calendar.dto";
 import { MonthEntity } from "src/entities/entity/month.entity";
 import { UpdateDaysDto } from "./dto/updateDay.dto";
 import { UpdateMonthDto } from "./dto/updateMonth.dto";
-import { get } from "http";
 
 @Injectable()
 export class CalendarService {
@@ -50,6 +49,9 @@ export class CalendarService {
         relations: {
           days: true,
         },
+        select: {
+          days: true,
+        },
       });
 
       // If no month record exists, return empty data structure
@@ -74,7 +76,7 @@ export class CalendarService {
             year: monthRecord.year,
             price: monthRecord.price,
           },
-          days: monthRecord.days || [],
+          days: monthRecord.days,
           totalDays: totalDaysInMonth,
           bookedDays:
             monthRecord.days?.filter((day) => day.isBooked).length || 0,
@@ -157,10 +159,10 @@ export class CalendarService {
       if (data.length == 0) {
         throw new HttpException("Days Data not found", HttpStatus.NO_CONTENT);
       }
-      const processedData: UpdateDaysDto[] = await this.getAllReqDays(data);
+      const processedData: DayEntity[] = await this.getAllReqDays(data);
 
       const saveData = await this.dayRepository.save(processedData);
-      return processedData;
+      return saveData;
     } catch (error) {
       return error;
     }
@@ -168,21 +170,24 @@ export class CalendarService {
   //---------------------------------------------------HELPER FUNCTIONS---------------
 
   private async getAllReqDays(data: UpdateDaysDto[]) {
-    const newData: UpdateDaysDto[] = [];
+    const newData: DayEntity[] = []; // Change type to DayEntity[]
+
     for (let index = 0; index <= data.length - 1; index++) {
       const DATE: UpdateDaysDto = data[index];
       const dateString = new Date(data[index].date).toISOString().split("T")[0];
       const existingRecords = await this.dayRepository.find({
         where: { date: dateString },
       });
+
       if (existingRecords.length > 0) {
         const updatedRecord = Object.assign(existingRecords[0], data[index]);
         newData.push(updatedRecord);
       } else {
         const day: string = data[index].date;
-        const getMonth = new Date(day).getMonth();
+        const getMonth = new Date(day).getMonth() + 1;
         const getYear = new Date(day).getFullYear();
-        const findMonthRecord = await this.monthRepository.findOne({
+
+        let findMonthRecord = await this.monthRepository.findOne({
           where: {
             month: getMonth,
             year: getYear,
@@ -190,18 +195,28 @@ export class CalendarService {
         });
 
         if (!findMonthRecord) {
-          const createNewMonthRecord = await this.monthRepository.save({
+          console.log("Creating new month record");
+          findMonthRecord = await this.monthRepository.save({
             month: getMonth,
             year: getYear,
           });
-          console.log("CREATE MONT RECORD", createNewMonthRecord);
-          DATE.monthId = createNewMonthRecord.id;
         }
-        DATE.monthId = findMonthRecord?.id;
-        newData.push(DATE);
+
+        console.log("findMonthRecord found/created:", findMonthRecord?.id);
+
+        // Create a new DayEntity instance and set the month relation properly
+        const newDay = this.dayRepository.create({
+          date: dateString,
+          price: DATE.price,
+          isBooked: DATE.isBooked || false,
+          isBlocked: DATE.isBlocked || false,
+          month: findMonthRecord?.id,
+        });
+
+        newData.push(newDay);
       }
     }
-
+    console.log("new Data", newData);
     return newData;
   }
 }
