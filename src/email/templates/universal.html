@@ -1,0 +1,145 @@
+<!-- universal-email-template.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{subject}}</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family:
+        -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+        &quot;Helvetica Neue&quot;, Arial, sans-serif;
+      background-color: #f4f4f4;
+    "
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background-color: #f4f4f4; padding: 40px 0"
+    >
+      <tr>
+        <td align="center">
+          <!-- Main Container -->
+          <table
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              overflow: hidden;
+              width: 100%;
+              max-width: 600px;
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                style="
+                  background-color: #00adee;
+                  padding: 30px 20px;
+                  text-align: center;
+                "
+              >
+                <h1
+                  style="
+                    color: #ffffff;
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 600;
+                  "
+                >
+                  {{companyName}}
+                </h1>
+                <p style="color: #e0e7ff; margin: 8px 0 0; font-size: 14px">
+                  {{tagline}}
+                </p>
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td style="padding: 40px 30px; background-color: #ffffff">
+                <!-- Greeting -->
+                <p
+                  style="
+                    font-size: 16px;
+                    color: #333;
+                    margin-bottom: 20px;
+                    line-height: 1.5;
+                  "
+                >
+                  {{greeting}}
+                </p>
+
+                <!-- Main Content -->
+                <div
+                  style="
+                    font-size: 15px;
+                    color: #555;
+                    line-height: 1.6;
+                    margin-bottom: 30px;
+                  "
+                >
+                  {{{content}}}
+                </div>
+
+                <!-- Closing -->
+                <p
+                  style="
+                    font-size: 15px;
+                    color: #555;
+                    line-height: 1.5;
+                    margin-top: 30px;
+                  "
+                >
+                  {{closing}}
+                </p>
+
+                <!-- Signature -->
+                <p
+                  style="
+                    font-size: 15px;
+                    color: #555;
+                    line-height: 1.5;
+                    margin-top: 20px;
+                  "
+                >
+                  {{signature}}
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #f8fafc;
+                  padding: 30px 20px;
+                  text-align: center;
+                  border-top: 1px solid #e2e8f0;
+                "
+              >
+                <p style="margin: 0 0 10px; color: #64748b; font-size: 13px">
+                  {{companyName}} | {{companyAddress}}
+                </p>
+                <p style="margin: 0 0 10px; color: #64748b; font-size: 13px">
+                  📧 {{companyEmail}} | 📞 {{companyPhone}}
+                </p>
+                <p style="margin: 20px 0 0; color: #94a3b8; font-size: 12px">
+                  © {{year}} {{companyName}}. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

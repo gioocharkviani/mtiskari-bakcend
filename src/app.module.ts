@@ -6,6 +6,8 @@ import { ConfigModule } from "@nestjs/config";
 import { FileModule } from "./file/file.module";
 import { EmailController } from "./email/email.controller";
 import { EmailModule } from "./email/email.module";
+import { ReferenceService } from './reference/reference.service';
+import { ReferenceModule } from './reference/reference.module';
 
 @Module({
   imports: [
@@ -17,8 +19,9 @@ import { EmailModule } from "./email/email.module";
     CalendarModeule,
     FileModule,
     EmailModule,
+    ReferenceModule,
   ],
   controllers: [EmailController],
-  providers: [],
+  providers: [ReferenceService],
 })
 export class AppModule {}

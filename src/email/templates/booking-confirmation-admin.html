@@ -1,0 +1,311 @@
+<!-- booking-confirmation-admin.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Booking Notification - Admin</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: &quot;Segoe UI&quot;, Arial, sans-serif;
+      background-color: #f4f4f4;
+    "
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background-color: #f4f4f4; padding: 20px 0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 12px;
+              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+              overflow: hidden;
+            "
+          >
+            <!-- Header for Admin -->
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+                  padding: 40px 30px;
+                  text-align: center;
+                "
+              >
+                <div style="font-size: 60px; margin-bottom: 10px">🔔</div>
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px">
+                  New Booking Received!
+                </h1>
+                <p style="color: #e0e0e0; margin: 10px 0 0; font-size: 16px">
+                  Action Required: Confirm the booking
+                </p>
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td style="padding: 40px 30px">
+                <!-- Admin Greeting -->
+                <p style="font-size: 16px; color: #333; margin-bottom: 10px">
+                  Dear Admin,
+                </p>
+                <p style="font-size: 16px; color: #555; margin-bottom: 30px">
+                  A new booking has been made and requires your confirmation.
+                  Please review the details below:
+                </p>
+
+                <!-- Priority Alert -->
+                <div
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #fff3cd 0%,
+                      #ffeaa7 100%
+                    );
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin-bottom: 25px;
+                    border-left: 4px solid #ffc107;
+                  "
+                >
+                  <p style="margin: 0; color: #856404; font-weight: 600">
+                    ⚠️ Action Required
+                  </p>
+                  <p style="margin: 5px 0 0; color: #856404; font-size: 14px">
+                    Please confirm or review this booking within 24 hours.
+                  </p>
+                </div>
+
+                <!-- Customer Information Section -->
+                <h2 style="color: #333; font-size: 18px; margin: 0 0 15px 0">
+                  👤 Customer Information
+                </h2>
+                <table
+                  width="100%"
+                  cellpadding="12"
+                  cellspacing="0"
+                  style="
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    margin-bottom: 25px;
+                  "
+                >
+                  <tr>
+                    <td width="40%"><strong>Customer Name:</strong></td>
+                    <td>{{customerName}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Email:</strong></td>
+                    <td>{{customerEmail}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Phone:</strong></td>
+                    <td>{{customerPhone}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Booking Date:</strong></td>
+                    <td>{{bookingDate}}</td>
+                  </tr>
+                </table>
+
+                <!-- Booking Details Section -->
+                <h2 style="color: #333; font-size: 18px; margin: 25px 0 15px 0">
+                  📋 Booking Details
+                </h2>
+                <table
+                  width="100%"
+                  cellpadding="12"
+                  cellspacing="0"
+                  style="
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    margin-bottom: 25px;
+                  "
+                >
+                  <tr>
+                    <td width="40%"><strong>Booking Reference:</strong></td>
+                    <td>
+                      <strong style="color: #dc3545"
+                        >{{bookingReference}}</strong
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Service Type:</strong></td>
+                    <td>{{serviceType}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Check-in Date:</strong></td>
+                    <td>{{checkInDate}} at {{checkInTime}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Check-out Date:</strong></td>
+                    <td>{{checkOutDate}} at {{checkOutTime}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Duration:</strong></td>
+                    <td>{{duration}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Number of Guests:</strong></td>
+                    <td>{{numberOfGuests}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Special Requests:</strong></td>
+                    <td>{{specialRequests}}</td>
+                  </tr>
+                  <tr style="background-color: #e9ecef">
+                    <td><strong>Total Amount:</strong></td>
+                    <td>
+                      <strong style="color: #28a745; font-size: 18px"
+                        >{{totalAmount}}</strong
+                      >
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Payment Information -->
+                <h2 style="color: #333; font-size: 18px; margin: 25px 0 15px 0">
+                  💰 Payment Information
+                </h2>
+                <table
+                  width="100%"
+                  cellpadding="12"
+                  cellspacing="0"
+                  style="
+                    background-color: #f8f9fa;
+                    border-radius: 8px;
+                    margin-bottom: 25px;
+                  "
+                >
+                  <tr>
+                    <td width="40%"><strong>Payment Status:</strong></td>
+                    <td>
+                      <!-- CHANGE BACKGROUND COLOUR -->
+                      <span
+                        style="
+                          background-color: rgb(255, 0, 0);
+                          color: #ffffff;
+                          display: inline-block;
+                          padding: 3px 10px;
+                          border-radius: 12px;
+                          font-size: 12px;
+                          font-weight: 600;
+                        "
+                        >{{paymentStatus}}</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Payment Method:</strong></td>
+                    <td>{{paymentMethod}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Transaction ID:</strong></td>
+                    <td>{{transactionId}}</td>
+                  </tr>
+                </table>
+
+                <!-- Admin Action Buttons -->
+                <h2 style="color: #333; font-size: 18px; margin: 25px 0 15px 0">
+                  ⚡ Quick Actions
+                </h2>
+                <table
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="margin-bottom: 25px"
+                >
+                  <tr>
+                    <td align="center">
+                      <a
+                        href="{{confirmBookingUrl}}"
+                        style="
+                          display: inline-block;
+                          background: #28a745;
+                          color: white;
+                          text-decoration: none;
+                          padding: 12px 25px;
+                          border-radius: 5px;
+                          margin: 0 8px 10px;
+                          font-weight: 600;
+                        "
+                        >✓ Confirm Booking</a
+                      >
+
+                      <a
+                        href="{{contactCustomerUrl}}"
+                        style="
+                          display: inline-block;
+                          background: #ffc107;
+                          color: #333;
+                          text-decoration: none;
+                          padding: 12px 25px;
+                          border-radius: 5px;
+                          margin: 0 8px 10px;
+                          font-weight: 600;
+                        "
+                        >Contact Customer</a
+                      >
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Admin Notes -->
+                <div
+                  style="
+                    background-color: #d1ecf1;
+                    border-left: 4px solid #17a2b8;
+                    padding: 15px;
+                    margin: 20px 0;
+                    border-radius: 4px;
+                  "
+                >
+                  <p
+                    style="margin: 0 0 5px 0; font-weight: 600; color: #0c5460"
+                  >
+                    📝 Admin Notes
+                  </p>
+                  <p style="margin: 0; color: #0c5460; font-size: 13px">
+                    Please ensure to check availability and confirm the booking
+                    within 24 hours. Send confirmation email to customer once
+                    booking is confirmed.
+                  </p>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #f8f9fa;
+                  padding: 30px;
+                  text-align: center;
+                "
+              >
+                <p style="margin: 0 0 10px; color: #666; font-size: 14px">
+                  This is an automated notification from {{companyName}} Admin
+                  Panel
+                </p>
+                <p style="margin: 10px 0 0; color: #999; font-size: 12px">
+                  {{adminPanelUrl}} | {{adminEmail}}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

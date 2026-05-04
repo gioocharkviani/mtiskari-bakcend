@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, Logger } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { bookingEntity } from "src/entities/entity/booking.entity";
 import { DayEntity } from "src/entities/entity/day.entity";
@@ -6,6 +12,11 @@ import { guestEntity } from "src/entities/entity/guest.entity";
 import { Repository } from "typeorm";
 import { NewBooking } from "./dto/booking.dto";
 import { MonthEntity } from "src/entities/entity/month.entity";
+import { EmailService } from "src/email/email.service";
+import { ReferenceService } from "src/reference/reference.service";
+import { confirmationEntity } from "src/entities/entity/confirmation.entity";
+import { ConfigService } from "@nestjs/config";
+import { BookingStatus } from "src/entities/entity/booking.entity";
 
 @Injectable()
 export class BookingService {
@@ -22,6 +33,13 @@ export class BookingService {
 
     @InjectRepository(bookingEntity)
     private readonly bookingRepository: Repository<bookingEntity>,
+
+    @InjectRepository(confirmationEntity)
+    private readonly confirmationRepository: Repository<confirmationEntity>,
+
+    private readonly emailService: EmailService,
+    private readonly referenceService: ReferenceService,
+    private readonly configService: ConfigService,
   ) {}
 
   //NEW BOOKING FN
@@ -66,15 +84,119 @@ export class BookingService {
       this.logger.log(
         `new booking created by ${guestId} : checkIn ${checkIn} , checkOut:${checkOut}`,
       );
+
+      const CONFIRMATION_TOKEN = this.referenceService.generateReference(
+        "MT",
+        63,
+      );
+
+      const createConfirmation = await this.confirmationRepository.create({
+        token: CONFIRMATION_TOKEN,
+      });
+      await this.confirmationRepository.save(createConfirmation);
+
+      const bookingData = {
+        customerName: firstName,
+        customerEmail: email,
+        customerPhone: phone,
+        reference: this.referenceService.generateUniqueReferences(),
+        totalAmount: totalPrice,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        duration: "",
+        confirmBookingUrl:
+          this.configService.get("BOOKING_CONFIRM_URL") +
+          CONFIRMATION_TOKEN +
+          `/${newBooking.id}`,
+      };
+      await this.emailService.sendBookingNotificationToAdmin(bookingData);
+
       return newBooking;
     } catch (error) {
       if (error instanceof ConflictException) {
-        throw error; // Re-throw the specific conflict message
+        throw error;
       }
-      throw new ConflictException(`Booking failed: ${error.message}`);
+      throw new ConflictException(`Booking failed`);
     }
   }
   //NEW BOOKING FN
+
+  //---------------------------------------------------------------------BOOKING CONFIRMATION
+  async bookingConfirmation(token: string, id: string) {
+    const BookingIdToint: number = parseInt(id);
+
+    // Validate parameters first
+    if (!token || !id) {
+      throw new BadRequestException("token OR booking Id not found");
+    }
+
+    const findBooking = await this.bookingRepository.findOne({
+      where: {
+        id: BookingIdToint,
+      },
+    });
+
+    const findToken = await this.confirmationRepository.findOne({
+      where: {
+        token: token,
+      },
+    });
+
+    if (!findBooking) {
+      throw new BadRequestException("Booking not found");
+    }
+
+    if (!findToken) {
+      throw new BadRequestException("Invalid token");
+    }
+
+    const guest = await this.guestRepository.findOne({
+      where: {
+        id: findBooking.guestId,
+      },
+    });
+
+    if (!guest) {
+      throw new BadRequestException("Guest not found");
+    }
+
+    try {
+      await this.bookingRepository.update(
+        { id: BookingIdToint },
+        { bookingStatus: BookingStatus.CONFIRMED },
+      );
+      await this.confirmationRepository.delete(findToken.id);
+
+      const confirmationMailData = {
+        customerName: guest.firstName || "",
+        bookingReference: "",
+        bookingStatus: "CONFIRMED",
+        checkInDate: findBooking.checkInDate || "",
+        checkInTime: "",
+        checkOutDate: findBooking.checkOutDate || "",
+        checkOutTime: "",
+        duration: `${findBooking.totalNights || 0} nights`,
+        bookingDetails: "",
+        totalAmount: "",
+        customerEmail: guest.email || "",
+      };
+      await this.emailService.sendBookingConfirmationToCustomer(
+        confirmationMailData,
+      );
+      return {
+        success: true,
+        message: "Booking confirmed successfully",
+        bookingId: id,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to confirm booking");
+    }
+  }
+  //---------------------------------------------------------------------BOOKING CONFIRMATION
+
+  //---------------------------------------------------------------------CHANGE BOOKING INFO
+  async changeBookingInfo() {}
+  //---------------------------------------------------------------------CHANGE BOOKING INFO
 
   //---------------------------------------------------------------------HELPER FUNCTIONS
 
@@ -209,7 +331,6 @@ export class BookingService {
             month: month,
           });
           monthRecord = await this.monthRepository.save(monthRecord);
-          console.log(`Created new month: ${year}-${month}`);
         }
 
         monthId = monthRecord.id;
@@ -232,7 +353,6 @@ export class BookingService {
         .orIgnore()
         .execute();
 
-      // console.log(`Saved ${daysToInsert.length} days`);
       return saveDays;
     }
 
