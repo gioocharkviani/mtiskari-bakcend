@@ -4,19 +4,21 @@ import { DatabaseModule } from "./database/database.module";
 import { CalendarModeule } from "./calendar/calendar.module";
 import { ConfigModule } from "@nestjs/config";
 import { FileModule } from "./file/file.module";
+import { EmailController } from "./email/email.controller";
+import { EmailModule } from "./email/email.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ".env",
     }),
     DatabaseModule,
     BookingModule,
     CalendarModeule,
     FileModule,
+    EmailModule,
   ],
-  controllers: [],
+  controllers: [EmailController],
   providers: [],
 })
 export class AppModule {}

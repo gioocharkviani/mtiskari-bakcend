@@ -12,6 +12,7 @@ import { CalendarDto } from "./dto/calendar.dto";
 import { MonthEntity } from "src/entities/entity/month.entity";
 import { UpdateDaysDto } from "./dto/updateDay.dto";
 import { UpdateMonthDto } from "./dto/updateMonth.dto";
+import { STATUS_CODES } from "http";
 
 @Injectable()
 export class CalendarService {
@@ -94,7 +95,7 @@ export class CalendarService {
     }
   }
 
-  // Change month price
+  // ------------------------------------------------   CHANGE MOTNH INFO
   async changeMonthPrice({ month, year, price }: UpdateMonthDto) {
     try {
       if (!month || !year) {
@@ -153,14 +154,13 @@ export class CalendarService {
     }
   }
 
-  //change each days info price or status
+  // --------------------------------------------------- DAYS INFO CHANGE
   async changeDaysInfo(data: UpdateDaysDto[]) {
     try {
       if (data.length == 0) {
         throw new HttpException("Days Data not found", HttpStatus.NO_CONTENT);
       }
       const processedData: DayEntity[] = await this.getAllReqDays(data);
-
       const saveData = await this.dayRepository.save(processedData);
       return saveData;
     } catch (error) {
@@ -170,10 +170,18 @@ export class CalendarService {
   //---------------------------------------------------HELPER FUNCTIONS---------------
 
   private async getAllReqDays(data: UpdateDaysDto[]) {
-    const newData: DayEntity[] = []; // Change type to DayEntity[]
+    const newData: DayEntity[] = [];
 
     for (let index = 0; index <= data.length - 1; index++) {
       const DATE: UpdateDaysDto = data[index];
+      const NOWDATE = new Date();
+      const REQUESTDATE = new Date(data[index].date);
+      if (REQUESTDATE < NOWDATE) {
+        throw new HttpException(
+          "some date from request is pass",
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const dateString = new Date(data[index].date).toISOString().split("T")[0];
       const existingRecords = await this.dayRepository.find({
         where: { date: dateString },
@@ -195,14 +203,11 @@ export class CalendarService {
         });
 
         if (!findMonthRecord) {
-          console.log("Creating new month record");
           findMonthRecord = await this.monthRepository.save({
             month: getMonth,
             year: getYear,
           });
         }
-
-        console.log("findMonthRecord found/created:", findMonthRecord?.id);
 
         // Create a new DayEntity instance and set the month relation properly
         const newDay = this.dayRepository.create({
@@ -216,7 +221,6 @@ export class CalendarService {
         newData.push(newDay);
       }
     }
-    console.log("new Data", newData);
     return newData;
   }
 }
