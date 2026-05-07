@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
 import { EmailService } from "src/email/email.service";
@@ -14,9 +20,16 @@ export class AuthService {
 
   //-----------------------------------------------admin login
   async adminSignIn(data: adminLoginDto) {
-    const ADMIN_HASH = await this.configService.get("ADMIN_HASH");
-    const comparePassword = await bcrypt.compare(data.password, ADMIN_HASH);
-    return comparePassword;
+    try {
+      const ADMIN_HASH = await this.configService.get("ADMIN_HASH");
+      const comparePassword = await bcrypt.compare(data.password, ADMIN_HASH);
+      if (!comparePassword) {
+        return new UnauthorizedException();
+      }
+      return "აქ იქნება ფ";
+    } catch (error) {
+      throw new BadRequestException();
+    }
   }
   //-----------------------------------------------admin login
 
