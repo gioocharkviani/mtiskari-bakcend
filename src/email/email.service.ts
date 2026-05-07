@@ -173,7 +173,7 @@ export class EmailService {
   }
 
   //--------------------------------------------------- SEND EMAIL
-  private async sendEmail(dto: emailDto) {
+  async sendEmail(dto: emailDto) {
     const { recipients, subject, html } = dto;
 
     const transport = this.emailTransport();
