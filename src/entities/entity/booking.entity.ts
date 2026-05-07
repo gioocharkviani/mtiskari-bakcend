@@ -19,7 +19,9 @@ export enum BookingStatus {
 export class bookingEntity {
   @PrimaryGeneratedColumn()
   id?: number;
-  @Column({ nullable: false })
+  @Column({ nullable: true })
+  reference?: string;
+  @Column({ nullable: true })
   guestId!: number;
   @Column({ nullable: false })
   checkInDate?: string;

@@ -73,13 +73,15 @@ export class BookingService {
       const reqBookingDays = this.getAllNewBookingDays(checkIn, checkOut);
       // Check days avalebility
       await this.checkAvailability(reqBookingDays);
-
+      const reference: string =
+        this.referenceService.generateUniqueReferences()[0];
       const newBooking = await this.createBooking(
         checkIn,
         checkOut,
         totalPrice,
         guestId,
         guestCount,
+        reference,
       );
       this.logger.log(
         `new booking created by ${guestId} : checkIn ${checkIn} , checkOut:${checkOut}`,
@@ -99,7 +101,7 @@ export class BookingService {
         customerName: firstName,
         customerEmail: email,
         customerPhone: phone,
-        reference: this.referenceService.generateUniqueReferences(),
+        reference: reference,
         totalAmount: totalPrice,
         checkInDate: checkIn,
         checkOutDate: checkOut,
@@ -169,15 +171,15 @@ export class BookingService {
 
       const confirmationMailData = {
         customerName: guest.firstName || "",
-        bookingReference: "",
+        reference: findBooking.reference,
         bookingStatus: "CONFIRMED",
         checkInDate: findBooking.checkInDate || "",
-        checkInTime: "",
+        checkInTime: await this.configService.get("CHECK_IN_TIME"),
         checkOutDate: findBooking.checkOutDate || "",
-        checkOutTime: "",
+        checkOutTime: await this.configService.get("CHECK_OUT_TIME"),
         duration: `${findBooking.totalNights || 0} nights`,
         bookingDetails: "",
-        totalAmount: "",
+        totalAmount: findBooking.totalPrice,
         customerEmail: guest.email || "",
       };
       await this.emailService.sendBookingConfirmationToCustomer(
@@ -275,6 +277,7 @@ export class BookingService {
     totalPrice?: number,
     guestId?: number,
     guestCount?: number,
+    reference?: string,
   ) {
     const checkBookingDates = await this.bookingRepository
       .createQueryBuilder("date")
@@ -300,6 +303,7 @@ export class BookingService {
       guestCount: guestCount,
       guestId: guestId,
       totalPrice: totalPrice,
+      reference,
     });
 
     return await this.bookingRepository.save(newBooking);

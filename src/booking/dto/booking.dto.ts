@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
 } from "class-validator";
 
@@ -13,6 +14,9 @@ export class NewBooking {
   @IsNotEmpty()
   @IsString()
   lastName?: string;
+  @IsOptional()
+  @IsString()
+  reference?: string;
   @IsNotEmpty()
   @IsString()
   phone?: string;
