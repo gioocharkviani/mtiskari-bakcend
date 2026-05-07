@@ -43,7 +43,6 @@ export class EmailService {
     for (const possiblePath of possiblePaths) {
       if (fs.existsSync(possiblePath)) {
         templatePath = possiblePath;
-        console.log(`Found template at: ${templatePath}`);
         break;
       }
     }
@@ -141,6 +140,24 @@ export class EmailService {
     });
   }
 
+  //-----------------------------------------------SEND EMAIL WITH UNIVERSAL TEMPLATE
+  async sendUniversalTemplateEmail(data: any) {
+    const HTML = await this.renderTemplate("default", {
+      content: data.html || "NO CONTENT",
+      companyEmail: await this.configService.get("COMPANY_EMAIL"),
+      companyPhone: await this.configService.get("COMPANY_PHONE"),
+      companyName: await this.configService.get("COMPANY_NAME"),
+      year: await this.configService.get("YEAR"),
+      companyAddress: await this.configService.get("COMPANY_ADDRESS"),
+    });
+    return this.sendEmail({
+      recipients: data.recipients,
+      subject: `${data.subject}`,
+      html: HTML,
+    });
+  }
+  //-----------------------------------------------SEND EMAIL WITH UNIVERSAL TEMPLATE
+
   //----------------------------------------------- EMAIL TRANSPORT
   emailTransport() {
     const transporter = nodemailer.createTransport({
@@ -156,7 +173,7 @@ export class EmailService {
   }
 
   //--------------------------------------------------- SEND EMAIL
-  async sendEmail(dto: emailDto) {
+  private async sendEmail(dto: emailDto) {
     const { recipients, subject, html } = dto;
 
     const transport = this.emailTransport();

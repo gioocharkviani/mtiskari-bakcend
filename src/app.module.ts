@@ -8,6 +8,8 @@ import { EmailController } from "./email/email.controller";
 import { EmailModule } from "./email/email.module";
 import { ReferenceService } from './reference/reference.service';
 import { ReferenceModule } from './reference/reference.module';
+import { AuthController } from './auth/auth.controller';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,8 +22,9 @@ import { ReferenceModule } from './reference/reference.module';
     FileModule,
     EmailModule,
     ReferenceModule,
+    AuthModule,
   ],
-  controllers: [EmailController],
+  controllers: [EmailController, AuthController],
   providers: [ReferenceService],
 })
 export class AppModule {}
