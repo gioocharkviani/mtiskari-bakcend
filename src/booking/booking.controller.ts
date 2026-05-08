@@ -1,7 +1,16 @@
-import { Body, Controller, Get, Param, Post, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import { BookingService } from "./booking.service";
 import { NewBooking } from "./dto/booking.dto";
 import type { Response } from "express";
+import { AuthGuard } from "src/guards/auth.guard";
 
 @Controller("booking")
 export class BookingController {

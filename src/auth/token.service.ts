@@ -9,6 +9,8 @@ import { tokenEntity } from "src/entities/entity/token.entity";
 import { Repository } from "typeorm";
 import { v4 as uuid4 } from "uuid";
 import { ConfigService } from "@nestjs/config";
+import { tokenInterface } from "./types/token.interface";
+import { find } from "rxjs";
 
 @Injectable()
 export class TokenService {
@@ -20,17 +22,7 @@ export class TokenService {
   //-------------------------------------------SAVE AUTH TOKEN
   async generateAuthToken() {
     try {
-      const findToken = await this.tokenRepository.findOne({
-        where: {
-          isActive: true,
-          type: "ADMIN",
-        },
-      });
       const generateToken = await this.saveGeneratedToken();
-      if (findToken) {
-        await this.tokenRepository.delete(findToken.id);
-        return generateToken;
-      }
       return generateToken;
     } catch (error) {
       throw new BadRequestException();
@@ -64,6 +56,26 @@ export class TokenService {
     }
   }
   //------------------------------------------VALIDATE AUTH TOKEN
+
+  //------------------------------------------REMOVE TOKEN
+  async deleteToken(data: tokenInterface) {
+    const findToken: tokenEntity | null = await this.tokenRepository.findOne({
+      where: {
+        token: data?.token,
+        isActive: true,
+        type: data.type,
+      },
+    });
+    if (findToken) {
+      await this.tokenRepository.delete(findToken.id);
+      return {
+        status: 202,
+        message: "token remove successfully",
+      };
+    }
+    return new HttpException("token not found", HttpStatus.NOT_FOUND);
+  }
+  //------------------------------------------REMOVE TOKEN
 
   //GENERATE TOKEN
   private async saveGeneratedToken() {

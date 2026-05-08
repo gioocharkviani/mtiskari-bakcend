@@ -14,7 +14,7 @@ export class tokenEntity {
   @Column()
   isActive!: boolean;
   @Column({ nullable: false })
-  type!: "ADMIN" | "GUEST" | "MODERATOR";
+  type!: "ADMIN" | "CUSTOMER" | "MODERATOR";
   @CreateDateColumn()
   createdAt?: Date;
   @Column({ type: "timestamp" })

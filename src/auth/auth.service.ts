@@ -11,6 +11,7 @@ import { EmailService } from "src/email/email.service";
 import { createAdminHashDto } from "./dto/createpassword.dto";
 import { adminLoginDto } from "./dto/login.dto";
 import { TokenService } from "./token.service";
+import { logOutDto } from "./dto/logout.dto";
 
 @Injectable()
 export class AuthService {
@@ -35,6 +36,24 @@ export class AuthService {
     }
   }
   //-----------------------------------------------admin login
+
+  //---------------------------------------------- admin sign out
+  async adminSignOut(body: logOutDto) {
+    try {
+      await this.tokenService.deleteToken({
+        token: body.token,
+        isActive: true,
+        type: "ADMIN",
+      });
+      return {
+        success: true,
+        message: "Logout successful.",
+      };
+    } catch (error) {
+      throw new HttpException("Error during logout", HttpStatus.BAD_REQUEST);
+    }
+  }
+  //---------------------------------------------- admin sign out
 
   //-------------------------------------------------create amin password hash
   async createAdminPasswordHash(data: createAdminHashDto) {
