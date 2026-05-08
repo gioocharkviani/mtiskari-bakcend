@@ -10,11 +10,13 @@ import * as bcrypt from "bcrypt";
 import { EmailService } from "src/email/email.service";
 import { createAdminHashDto } from "./dto/createpassword.dto";
 import { adminLoginDto } from "./dto/login.dto";
+import { TokenService } from "./token.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly configService: ConfigService,
+    private readonly tokenService: TokenService,
     private readonly emailService: EmailService,
   ) {}
 
@@ -26,7 +28,8 @@ export class AuthService {
       if (!comparePassword) {
         return new UnauthorizedException();
       }
-      return "აქ იქნება ფ";
+      const token = await this.tokenService.generateAuthToken();
+      return token;
     } catch (error) {
       throw new BadRequestException();
     }
@@ -48,7 +51,7 @@ export class AuthService {
     }
     try {
       const hash = await bcrypt.hash(data.password, parseInt(SALT));
-      console.log(hash);
+
       await this.emailService.sendUniversalTemplateEmail({
         recipients: [ADMIN],
         subject: "ADMIN HASH PASSWORD",

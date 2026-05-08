@@ -6,6 +6,7 @@ import { guestEntity } from "./entity/guest.entity";
 import { bookingEntity } from "./entity/booking.entity";
 import { emailEntity } from "./entity/mail.entity";
 import { confirmationEntity } from "./entity/confirmation.entity";
+import { tokenEntity } from "./entity/token.entity";
 
 @Global()
 @Module({
@@ -16,6 +17,7 @@ import { confirmationEntity } from "./entity/confirmation.entity";
       guestEntity,
       bookingEntity,
       emailEntity,
+      tokenEntity,
       confirmationEntity,
     ]),
   ],
