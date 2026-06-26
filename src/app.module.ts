@@ -6,10 +6,12 @@ import { ConfigModule } from "@nestjs/config";
 import { FileModule } from "./file/file.module";
 import { EmailController } from "./email/email.controller";
 import { EmailModule } from "./email/email.module";
-import { ReferenceService } from './reference/reference.service';
-import { ReferenceModule } from './reference/reference.module';
-import { AuthController } from './auth/auth.controller';
-import { AuthModule } from './auth/auth.module';
+import { ReferenceService } from "./reference/reference.service";
+import { ReferenceModule } from "./reference/reference.module";
+import { AuthController } from "./auth/auth.controller";
+import { AuthModule } from "./auth/auth.module";
+import { TokenModule } from "./token/token.module";
+import { ContentModule } from "./content/content.module";
 
 @Module({
   imports: [
@@ -23,8 +25,11 @@ import { AuthModule } from './auth/auth.module';
     EmailModule,
     ReferenceModule,
     AuthModule,
+    TokenModule,
+    ContentModule,
   ],
   controllers: [EmailController, AuthController],
   providers: [ReferenceService],
+  exports: [],
 })
 export class AppModule {}

@@ -158,6 +158,8 @@ export class BookingService {
       },
     });
 
+    console.log(guest);
+
     if (!guest) {
       throw new BadRequestException("Guest not found");
     }
@@ -180,7 +182,7 @@ export class BookingService {
         duration: `${findBooking.totalNights || 0} nights`,
         bookingDetails: "",
         totalAmount: findBooking.totalPrice,
-        customerEmail: guest.email || "",
+        customerEmail: guest.email,
       };
       await this.emailService.sendBookingConfirmationToCustomer(
         confirmationMailData,
@@ -195,6 +197,86 @@ export class BookingService {
     }
   }
   //---------------------------------------------------------------------BOOKING CONFIRMATION
+
+  //---------------------------------------------------------------------ADMIN: GET ALL BOOKINGS
+  async getAllBookings() {
+    const bookings = await this.bookingRepository.find({
+      order: { createdAt: "DESC" },
+    });
+
+    const result = await Promise.all(
+      bookings.map(async (booking) => {
+        const guest = await this.guestRepository.findOne({
+          where: { id: booking.guestId },
+        });
+        return { ...booking, guest };
+      }),
+    );
+
+    return { success: true, data: result, total: result.length };
+  }
+  //---------------------------------------------------------------------ADMIN: GET ALL BOOKINGS
+
+  //---------------------------------------------------------------------ADMIN: GET SINGLE BOOKING
+  async getBookingById(id: number) {
+    const booking = await this.bookingRepository.findOne({ where: { id } });
+    if (!booking) throw new BadRequestException("Booking not found");
+    const guest = await this.guestRepository.findOne({
+      where: { id: booking.guestId },
+    });
+    return { success: true, data: { ...booking, guest } };
+  }
+  //---------------------------------------------------------------------ADMIN: GET SINGLE BOOKING
+
+  //---------------------------------------------------------------------ADMIN: UPDATE BOOKING STATUS
+  async updateBookingStatus(id: number, status: BookingStatus) {
+    const booking = await this.bookingRepository.findOne({ where: { id } });
+    if (!booking) throw new BadRequestException("Booking not found");
+    await this.bookingRepository.update({ id }, { bookingStatus: status });
+    return { success: true, message: `Booking status updated to ${status}` };
+  }
+  //---------------------------------------------------------------------ADMIN: UPDATE BOOKING STATUS
+
+  //---------------------------------------------------------------------ADMIN: STATS
+  async getStats() {
+    const total = await this.bookingRepository.count();
+    const confirmed = await this.bookingRepository.count({
+      where: { bookingStatus: BookingStatus.CONFIRMED },
+    });
+    const pending = await this.bookingRepository.count({
+      where: { bookingStatus: BookingStatus.PENDING },
+    });
+    const cancelled = await this.bookingRepository.count({
+      where: { bookingStatus: BookingStatus.CANCELLED },
+    });
+
+    const revenueResult = await this.bookingRepository
+      .createQueryBuilder("b")
+      .select("SUM(b.totalPrice)", "total")
+      .where("b.bookingStatus IN (:...statuses)", {
+        statuses: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED],
+      })
+      .getRawOne();
+
+    const totalRevenue = parseInt(revenueResult?.total || "0");
+    const totalGuests = await this.guestRepository.count();
+
+    const upcoming = await this.bookingRepository
+      .createQueryBuilder("b")
+      .where("b.checkInDate >= :today", {
+        today: new Date().toISOString().split("T")[0],
+      })
+      .andWhere("b.bookingStatus = :status", {
+        status: BookingStatus.CONFIRMED,
+      })
+      .getCount();
+
+    return {
+      success: true,
+      data: { total, confirmed, pending, cancelled, totalRevenue, totalGuests, upcoming },
+    };
+  }
+  //---------------------------------------------------------------------ADMIN: STATS
 
   //---------------------------------------------------------------------CHANGE BOOKING INFO
   async changeBookingInfo() {}
@@ -223,7 +305,7 @@ export class BookingService {
     lastName?: string,
   ): Promise<number> {
     let guest = await this.guestRepository.findOne({
-      where: [{ email }, { phone }],
+      where: [{ email }],
     });
 
     if (!guest) {

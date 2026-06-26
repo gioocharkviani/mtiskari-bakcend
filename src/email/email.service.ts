@@ -96,7 +96,7 @@ export class EmailService {
     });
 
     return this.sendEmail({
-      recipients: bookingData.customerEmail,
+      recipients: [bookingData.customerEmail],
       subject: `Booking Confirmed - ${bookingData.reference}`,
       html: html,
     });

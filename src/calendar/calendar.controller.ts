@@ -1,8 +1,16 @@
-import { Body, Controller, Get, Param, Patch, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import { CalendarService } from "./calendar.service";
-import { CalendarDto } from "./dto/calendar.dto";
 import { UpdateMonthDto } from "./dto/updateMonth.dto";
 import { UpdateDaysDto } from "./dto/updateDay.dto";
+import { AuthGuard } from "src/guards/auth.guard";
 
 @Controller("calendar")
 export class CaldendarController {
@@ -17,16 +25,16 @@ export class CaldendarController {
     return this.calendarService.getAllCalendarDay(body);
   }
 
-  //TODO add auth role guard
   // Change month price by ID
   @Patch("month")
+  @UseGuards(AuthGuard)
   changeMonthPrice(@Body() body: UpdateMonthDto) {
     return this.calendarService.changeMonthPrice(body);
   }
 
-  //TODO add auth role guard
   //Change day info
   @Patch("days")
+  @UseGuards(AuthGuard)
   changeDaysInfo(@Body() body: UpdateDaysDto[]) {
     return this.calendarService.changeDaysInfo(body);
   }

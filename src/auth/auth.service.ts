@@ -10,8 +10,9 @@ import * as bcrypt from "bcrypt";
 import { EmailService } from "src/email/email.service";
 import { createAdminHashDto } from "./dto/createpassword.dto";
 import { adminLoginDto } from "./dto/login.dto";
-import { TokenService } from "./token.service";
+
 import { logOutDto } from "./dto/logout.dto";
+import { TokenService } from "src/token/token.service";
 
 @Injectable()
 export class AuthService {

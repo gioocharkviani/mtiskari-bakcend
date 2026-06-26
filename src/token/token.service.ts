@@ -9,8 +9,7 @@ import { tokenEntity } from "src/entities/entity/token.entity";
 import { Repository } from "typeorm";
 import { v4 as uuid4 } from "uuid";
 import { ConfigService } from "@nestjs/config";
-import { tokenInterface } from "./types/token.interface";
-import { find } from "rxjs";
+import { tokenInterface } from "src/auth/types/token.interface";
 
 @Injectable()
 export class TokenService {

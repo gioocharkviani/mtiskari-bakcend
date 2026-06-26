@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from "@nestjs/common";
-import { TokenService } from "src/auth/token.service";
+import { TokenService } from "src/token/token.service";
 import { getCookie } from "src/utils/cookes";
 
 @Injectable()
