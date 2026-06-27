@@ -5,6 +5,7 @@ import { AppSettingEntity } from "src/entities/entity/app-setting.entity";
 
 const DEFAULTS: Record<string, string> = {
   multi_cottage_mode: "false",
+  default_currency: "GEL",
 };
 
 @Injectable()

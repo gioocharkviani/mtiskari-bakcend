@@ -15,6 +15,18 @@ export enum BookingStatus {
   REFUNDED = "REFUNDED",
 }
 
+export enum PaymentStatus {
+  UNPAID = "UNPAID",
+  PAID = "PAID",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+}
+
+export enum PaymentType {
+  CASH = "CASH",
+  CARD = "CARD",
+  BANK_TRANSFER = "BANK_TRANSFER",
+}
+
 @Entity("booking")
 export class bookingEntity {
   @PrimaryGeneratedColumn()
@@ -26,6 +38,23 @@ export class bookingEntity {
 
   @Column({ nullable: true, type: "int" })
   cottageId?: number | null;
+
+  @Column({ nullable: true, type: "int" })
+  channelId?: number | null;
+
+  @Column({ nullable: true })
+  channelName?: string;
+
+  @Column({
+    nullable: true,
+    type: "enum",
+    enum: PaymentStatus,
+    default: PaymentStatus.UNPAID,
+  })
+  paymentStatus?: PaymentStatus;
+
+  @Column({ nullable: true, type: "enum", enum: PaymentType })
+  paymentType?: PaymentType;
   @Column({ nullable: false })
   checkInDate?: string;
   @Column({ nullable: false })

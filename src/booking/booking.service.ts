@@ -6,17 +6,18 @@ import {
   Logger,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { bookingEntity } from "src/entities/entity/booking.entity";
+import { bookingEntity, BookingStatus, PaymentStatus, PaymentType } from "src/entities/entity/booking.entity";
 import { DayEntity } from "src/entities/entity/day.entity";
 import { guestEntity } from "src/entities/entity/guest.entity";
 import { Repository } from "typeorm";
 import { NewBooking } from "./dto/booking.dto";
+import { ExternalBookingDto } from "./dto/external-booking.dto";
+import { UpdatePaymentDto } from "./dto/update-payment.dto";
 import { MonthEntity } from "src/entities/entity/month.entity";
 import { EmailService } from "src/email/email.service";
 import { ReferenceService } from "src/reference/reference.service";
 import { confirmationEntity } from "src/entities/entity/confirmation.entity";
 import { ConfigService } from "@nestjs/config";
-import { BookingStatus } from "src/entities/entity/booking.entity";
 
 @Injectable()
 export class BookingService {
@@ -297,6 +298,54 @@ export class BookingService {
     };
   }
   //---------------------------------------------------------------------ADMIN: STATS
+
+  //---------------------------------------------------------------------ADMIN: EXTERNAL (CHANNEL) BOOKING
+  async createExternalBooking(dto: ExternalBookingDto) {
+    const { checkInDate, checkOutDate, channelId, channelName, totalPrice, guestCount, cottageId } = dto;
+
+    const { checkIn, checkOut } = this.validateDates(checkInDate, checkOutDate);
+    const reqBookingDays = this.getAllNewBookingDays(checkIn, checkOut);
+    await this.checkAvailability(reqBookingDays);
+
+    let guestId: number | undefined;
+    if (dto.email) {
+      guestId = await this.findOrCreateGuest(dto.email, dto.phone, dto.firstName, dto.lastName);
+    }
+
+    await this.saveBookedDay(reqBookingDays);
+
+    const totalNight = reqBookingDays.length;
+    const reference = this.referenceService.generateReference("EXT", 8);
+
+    const booking = this.bookingRepository.create({
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
+      totalNights: totalNight,
+      guestCount: guestCount ?? 1,
+      guestId: guestId ?? 0,
+      totalPrice: totalPrice ?? 0,
+      reference,
+      bookingStatus: BookingStatus.CONFIRMED,
+      channelId: channelId ?? undefined,
+      channelName: channelName ?? undefined,
+      cottageId: cottageId ?? null,
+      paymentStatus: PaymentStatus.UNPAID,
+    });
+
+    return this.bookingRepository.save(booking);
+  }
+  //---------------------------------------------------------------------ADMIN: EXTERNAL (CHANNEL) BOOKING
+
+  //---------------------------------------------------------------------ADMIN: UPDATE PAYMENT
+  async updatePayment(id: number, dto: UpdatePaymentDto) {
+    const booking = await this.bookingRepository.findOne({ where: { id } });
+    if (!booking) throw new BadRequestException("Booking not found");
+    if (dto.paymentStatus !== undefined) booking.paymentStatus = dto.paymentStatus;
+    if (dto.paymentType !== undefined) booking.paymentType = dto.paymentType;
+    await this.bookingRepository.save(booking);
+    return { success: true, message: "Payment info updated" };
+  }
+  //---------------------------------------------------------------------ADMIN: UPDATE PAYMENT
 
   //---------------------------------------------------------------------CHANGE BOOKING INFO
   async changeBookingInfo() {}

@@ -14,6 +14,7 @@ import { TokenModule } from "./token/token.module";
 import { ContentModule } from "./content/content.module";
 import { CottageModule } from "./cottage/cottage.module";
 import { SettingsModule } from "./settings/settings.module";
+import { ChannelModule } from "./channel/channel.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SettingsModule } from "./settings/settings.module";
     ContentModule,
     CottageModule,
     SettingsModule,
+    ChannelModule,
   ],
   controllers: [EmailController, AuthController],
   providers: [ReferenceService],

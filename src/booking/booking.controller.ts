@@ -12,6 +12,8 @@ import {
 import { BookingService } from "./booking.service";
 import { NewBooking } from "./dto/booking.dto";
 import { UpdateStatusDto } from "./dto/updateStatus.dto";
+import { ExternalBookingDto } from "./dto/external-booking.dto";
+import { UpdatePaymentDto } from "./dto/update-payment.dto";
 import type { Response } from "express";
 import { AuthGuard } from "src/guards/auth.guard";
 
@@ -60,5 +62,20 @@ export class BookingController {
     @Body() body: UpdateStatusDto,
   ) {
     return this.bookingService.updateBookingStatus(id, body.status);
+  }
+
+  @Post("admin/external")
+  @UseGuards(AuthGuard)
+  createExternalBooking(@Body() body: ExternalBookingDto) {
+    return this.bookingService.createExternalBooking(body);
+  }
+
+  @Patch(":id/payment")
+  @UseGuards(AuthGuard)
+  updatePayment(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() body: UpdatePaymentDto,
+  ) {
+    return this.bookingService.updatePayment(id, body);
   }
 }
