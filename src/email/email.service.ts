@@ -140,6 +140,32 @@ export class EmailService {
     });
   }
 
+  //-----------------------------------------------SEND CONTACT FORM TO ADMIN
+  async sendContactForm(data: { name: string; email: string; phone?: string; message: string }) {
+    const adminEmail = this.configService.get("EMAIL_USER");
+    const html = `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
+        <h2 style="color:#166534;margin-bottom:24px;">New Contact Form Message</h2>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="padding:8px 0;color:#6b7280;width:120px;font-weight:600;">Name</td><td style="padding:8px 0;color:#111827;">${data.name}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Email</td><td style="padding:8px 0;"><a href="mailto:${data.email}" style="color:#166534;">${data.email}</a></td></tr>
+          ${data.phone ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Phone</td><td style="padding:8px 0;color:#111827;">${data.phone}</td></tr>` : ""}
+        </table>
+        <div style="margin-top:24px;padding:16px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
+          <p style="color:#6b7280;font-size:12px;font-weight:600;margin:0 0 8px;">MESSAGE</p>
+          <p style="color:#111827;margin:0;white-space:pre-wrap;">${data.message}</p>
+        </div>
+        <p style="margin-top:24px;color:#9ca3af;font-size:12px;">Sent from Mtiskari contact form</p>
+      </div>
+    `;
+    return this.sendEmail({
+      recipients: [adminEmail],
+      subject: `Contact form: message from ${data.name}`,
+      html,
+    });
+  }
+  //-----------------------------------------------SEND CONTACT FORM TO ADMIN
+
   //-----------------------------------------------SEND EMAIL WITH UNIVERSAL TEMPLATE
   async sendUniversalTemplateEmail(data: any) {
     const HTML = await this.renderTemplate("default", {
