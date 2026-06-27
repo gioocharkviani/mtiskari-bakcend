@@ -25,6 +25,14 @@ const DEFAULT_CONTENT: Array<{ key: string; en: string; ka: string }> = [
   { key: "nav_home", en: "Home", ka: "მთავარი" },
   { key: "nav_gallery", en: "Gallery", ka: "გალერეა" },
   { key: "nav_contact", en: "Contact", ka: "კონტაქტი" },
+  { key: "gallery_page_title", en: "Mtiskari Gallery", ka: "მწისქარის გალერეა" },
+  { key: "gallery_page_subtitle", en: "Immerse yourself in the breathtaking beauty of Mtiskari through our collection of stunning photographs", ka: "ჩაეფლეთ მწისქარის ხიბლში ჩვენი განსაცვიფრებელი ფოტოების კოლექციის მეშვეობით" },
+  { key: "gallery_page_empty_title", en: "Gallery coming soon", ka: "გალერეა მალე" },
+  { key: "gallery_page_empty_subtitle", en: "Photos will appear here once uploaded by the admin", ka: "ფოტოები გამოჩნდება აქ ადმინის ატვირთვის შემდეგ" },
+  { key: "gallery_page_zoom_label", en: "Click to zoom", ka: "დასადიდებლად დააჭირეთ" },
+  { key: "gallery_page_cta_title", en: "Experience Mtiskari in Person", ka: "განიცადეთ მწისქარი პირადად" },
+  { key: "gallery_page_cta_desc", en: "These photos capture just a glimpse of what awaits you. Come see the beauty for yourself.", ka: "ეს ფოტოები მხოლოდ ნაწილია იმისა, რაც თქვენ ელოდება. მოდით და ნახეთ სილამაზე თვითონ." },
+  { key: "gallery_page_cta_btn", en: "Plan Your Visit", ka: "დაგეგმეთ ვიზიტი" },
 ];
 
 @Injectable()
