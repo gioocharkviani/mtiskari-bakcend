@@ -55,35 +55,16 @@ export class BookingService {
         checkOutDate,
         totalPrice,
         guestCount,
+        cottageId,
       } = newBookingDto;
 
-      // Validate and parse dates
-      const { checkIn, checkOut } = this.validateDates(
-        checkInDate,
-        checkOutDate,
-      );
-
-      //const new guest
-      const guestId = await this.findOrCreateGuest(
-        email,
-        phone,
-        firstName,
-        lastName,
-      );
-      //all requested booking days
+      const { checkIn, checkOut } = this.validateDates(checkInDate, checkOutDate);
+      const guestId = await this.findOrCreateGuest(email, phone, firstName, lastName);
       const reqBookingDays = this.getAllNewBookingDays(checkIn, checkOut);
-      // Check days avalebility
-      await this.checkAvailability(reqBookingDays);
-      const reference: string =
-        this.referenceService.generateUniqueReferences()[0];
-      const newBooking = await this.createBooking(
-        checkIn,
-        checkOut,
-        totalPrice,
-        guestId,
-        guestCount,
-        reference,
-      );
+      const cId = cottageId ?? 0;
+      await this.checkAvailability(reqBookingDays, cId);
+      const reference: string = this.referenceService.generateUniqueReferences()[0];
+      const newBooking = await this.createBooking(checkIn, checkOut, totalPrice, guestId, guestCount, reference, cId);
       this.logger.log(
         `new booking created by ${guestId} : checkIn ${checkIn} , checkOut:${checkOut}`,
       );
@@ -236,7 +217,6 @@ export class BookingService {
 
     await this.bookingRepository.update({ id }, { bookingStatus: status });
 
-    // Free up calendar days when booking is no longer active
     const freedStatuses = [
       BookingStatus.CANCELLED,
       BookingStatus.REJECTED,
@@ -244,12 +224,14 @@ export class BookingService {
     ];
     if (freedStatuses.includes(status) && booking.checkInDate && booking.checkOutDate) {
       const days = this.getAllNewBookingDays(booking.checkInDate, booking.checkOutDate);
+      const cottageId = booking.cottageId ?? 0;
       if (days.length > 0) {
         await this.dayRepository
           .createQueryBuilder()
           .update(DayEntity)
           .set({ isBooked: false })
           .where("date IN (:...dates)", { dates: days })
+          .andWhere("cottageId = :cottageId", { cottageId })
           .execute();
       }
     }
@@ -305,14 +287,15 @@ export class BookingService {
 
     const { checkIn, checkOut } = this.validateDates(checkInDate, checkOutDate);
     const reqBookingDays = this.getAllNewBookingDays(checkIn, checkOut);
-    await this.checkAvailability(reqBookingDays);
+    const cId = cottageId ?? 0;
+    await this.checkAvailability(reqBookingDays, cId);
 
     let guestId: number | undefined;
     if (dto.email) {
       guestId = await this.findOrCreateGuest(dto.email, dto.phone, dto.firstName, dto.lastName);
     }
 
-    await this.saveBookedDay(reqBookingDays);
+    await this.saveBookedDay(reqBookingDays, cId);
 
     const totalNight = reqBookingDays.length;
     const reference = this.referenceService.generateReference("EXT", 8);
@@ -406,11 +389,12 @@ export class BookingService {
   }
 
   //CHECK IF DAY IS BOOKED
-  private async checkAvailability(dates: string[]) {
+  private async checkAvailability(dates: string[], cottageId = 0) {
     const bookedDays = await this.dayRepository
       .createQueryBuilder("day")
       .where("day.date IN (:...dates)", { dates })
       .andWhere("day.isBooked = :isBooked", { isBooked: true })
+      .andWhere("day.cottageId = :cottageId", { cottageId })
       .getMany();
 
     if (bookedDays.length > 0) {
@@ -429,95 +413,62 @@ export class BookingService {
     guestId?: number,
     guestCount?: number,
     reference?: string,
+    cottageId = 0,
   ) {
-    const inactiveStatuses = [
-      BookingStatus.CANCELLED,
-      BookingStatus.REJECTED,
-      BookingStatus.REFUNDED,
-    ];
-    const checkBookingDates = await this.bookingRepository
-      .createQueryBuilder("date")
-      .where("date.checkInDate IN (:checkIn)", { checkIn })
-      .andWhere("date.checkOutDate IN (:checkOut)", { checkOut })
-      .andWhere("date.bookingStatus NOT IN (:...inactiveStatuses)", { inactiveStatuses })
-      .getMany();
-
-    if (checkBookingDates.length > 0) {
-      throw new ConflictException(
-        "check in or checkOut date is already booked",
-      );
-    }
     const reqBookingDays = this.getAllNewBookingDays(checkIn, checkOut);
-    await this.saveBookedDay(reqBookingDays);
+    await this.saveBookedDay(reqBookingDays, cottageId);
 
-    //calculate total night
     const totalNight = reqBookingDays.length - 1;
 
     const newBooking = this.bookingRepository.create({
       checkInDate: checkIn,
       checkOutDate: checkOut,
       totalNights: totalNight,
-      guestCount: guestCount,
-      guestId: guestId,
-      totalPrice: totalPrice,
+      guestCount,
+      guestId,
+      totalPrice,
       reference,
+      cottageId: cottageId > 0 ? cottageId : null,
     });
 
     return await this.bookingRepository.save(newBooking);
   }
 
   //save all requested days with month associations
-  private async saveBookedDay(dates: string[]): Promise<any> {
-    const daysToInsert: Partial<DayEntity>[] = [];
+  private async saveBookedDay(dates: string[], cottageId = 0): Promise<void> {
     const monthCache = new Map<string, number>();
 
     for (const dateStr of dates) {
       const date = new Date(dateStr);
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
-      const monthKey = `${year}-${month}`;
+      const monthKey = `${year}-${month}-${cottageId}`;
       let monthId = monthCache.get(monthKey);
 
       if (!monthId) {
         let monthRecord = await this.monthRepository.findOne({
-          where: {
-            year: year,
-            month: month,
-          },
+          where: { year, month, cottageId },
         });
-
         if (!monthRecord) {
-          monthRecord = this.monthRepository.create({
-            year: year,
-            month: month,
-          });
-          monthRecord = await this.monthRepository.save(monthRecord);
+          monthRecord = await this.monthRepository.save(
+            this.monthRepository.create({ year, month, cottageId }),
+          );
         }
-
         monthId = monthRecord.id;
         monthCache.set(monthKey, monthId);
       }
 
-      daysToInsert.push({
-        date: dateStr,
-        isBooked: true,
-        month: monthId,
-      });
+      // Upsert: update isBooked=true if record exists, otherwise insert.
+      // This fixes the bug where orIgnore() left cancelled days unblocked after rebooking.
+      const existing = await this.dayRepository.findOne({ where: { date: dateStr, cottageId } });
+      if (existing) {
+        await this.dayRepository.update({ id: existing.id }, { isBooked: true });
+      } else {
+        await this.dayRepository.save(
+          this.dayRepository.create({ date: dateStr, isBooked: true, month: monthId, cottageId }),
+        );
+      }
     }
-
-    if (daysToInsert.length > 0) {
-      const saveDays = await this.dayRepository
-        .createQueryBuilder()
-        .insert()
-        .into(DayEntity)
-        .values(daysToInsert)
-        .orIgnore()
-        .execute();
-
-      return saveDays;
-    }
-
-    return { generatedMaps: [], raw: [] };
   }
   //---------------------------------------------------------------------HELPER FUNCTIONS
 }

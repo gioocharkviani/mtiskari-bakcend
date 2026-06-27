@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from "@nestjs/common";
@@ -15,27 +18,37 @@ import { AuthGuard } from "src/guards/auth.guard";
 @Controller("calendar")
 export class CaldendarController {
   constructor(private readonly calendarService: CalendarService) {}
-  //get all calendar days
+
   @Get()
   getAllCalendarDay(@Query() query) {
-    const body = {
+    return this.calendarService.getAllCalendarDay({
       month: parseInt(query.month),
       year: parseInt(query.year),
-    };
-    return this.calendarService.getAllCalendarDay(body);
+      cottageId: query.cottageId ? parseInt(query.cottageId) : 0,
+    });
   }
 
-  // Change month price by ID
   @Patch("month")
   @UseGuards(AuthGuard)
   changeMonthPrice(@Body() body: UpdateMonthDto) {
     return this.calendarService.changeMonthPrice(body);
   }
 
-  //Change day info
   @Patch("days")
   @UseGuards(AuthGuard)
   changeDaysInfo(@Body() body: UpdateDaysDto[]) {
     return this.calendarService.changeDaysInfo(body);
+  }
+
+  @Delete("day/:id")
+  @UseGuards(AuthGuard)
+  deleteDay(@Param("id", ParseIntPipe) id: number) {
+    return this.calendarService.deleteDay(id);
+  }
+
+  @Post("cleanup")
+  @UseGuards(AuthGuard)
+  cleanupUnpricedDays(@Body("cottageId") cottageId?: number) {
+    return this.calendarService.cleanupUnpricedDays(cottageId ?? 0);
   }
 }

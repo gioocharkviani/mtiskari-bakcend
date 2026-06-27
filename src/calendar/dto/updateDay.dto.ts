@@ -1,7 +1,6 @@
 import {
   IsBoolean,
   IsDateString,
-  isNumber,
   IsNumber,
   IsOptional,
   IsString,
@@ -22,4 +21,7 @@ export class UpdateDaysDto {
   @IsOptional()
   @IsNumber()
   month?: number;
+  @IsOptional()
+  @IsNumber()
+  cottageId?: number;
 }

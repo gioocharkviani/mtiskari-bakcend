@@ -21,6 +21,8 @@ export class MonthEntity {
   price?: number;
   @Column("int")
   year?: number;
+  @Column({ type: "int", nullable: false, default: 0 })
+  cottageId?: number;
   @OneToMany(() => DayEntity, (day) => day.month)
   days?: DayEntity[];
   @CreateDateColumn()

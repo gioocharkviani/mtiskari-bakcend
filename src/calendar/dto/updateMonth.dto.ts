@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 
 export class UpdateMonthDto {
   @IsNumber()
@@ -10,4 +10,7 @@ export class UpdateMonthDto {
   @IsNumber()
   @IsNotEmpty()
   year?: number;
+  @IsOptional()
+  @IsNumber()
+  cottageId?: number;
 }
