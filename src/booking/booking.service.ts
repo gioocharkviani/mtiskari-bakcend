@@ -232,7 +232,27 @@ export class BookingService {
   async updateBookingStatus(id: number, status: BookingStatus) {
     const booking = await this.bookingRepository.findOne({ where: { id } });
     if (!booking) throw new BadRequestException("Booking not found");
+
     await this.bookingRepository.update({ id }, { bookingStatus: status });
+
+    // Free up calendar days when booking is no longer active
+    const freedStatuses = [
+      BookingStatus.CANCELLED,
+      BookingStatus.REJECTED,
+      BookingStatus.REFUNDED,
+    ];
+    if (freedStatuses.includes(status) && booking.checkInDate && booking.checkOutDate) {
+      const days = this.getAllNewBookingDays(booking.checkInDate, booking.checkOutDate);
+      if (days.length > 0) {
+        await this.dayRepository
+          .createQueryBuilder()
+          .update(DayEntity)
+          .set({ isBooked: false })
+          .where("date IN (:...dates)", { dates: days })
+          .execute();
+      }
+    }
+
     return { success: true, message: `Booking status updated to ${status}` };
   }
   //---------------------------------------------------------------------ADMIN: UPDATE BOOKING STATUS
@@ -361,10 +381,16 @@ export class BookingService {
     guestCount?: number,
     reference?: string,
   ) {
+    const inactiveStatuses = [
+      BookingStatus.CANCELLED,
+      BookingStatus.REJECTED,
+      BookingStatus.REFUNDED,
+    ];
     const checkBookingDates = await this.bookingRepository
       .createQueryBuilder("date")
       .where("date.checkInDate IN (:checkIn)", { checkIn })
       .andWhere("date.checkOutDate IN (:checkOut)", { checkOut })
+      .andWhere("date.bookingStatus NOT IN (:...inactiveStatuses)", { inactiveStatuses })
       .getMany();
 
     if (checkBookingDates.length > 0) {

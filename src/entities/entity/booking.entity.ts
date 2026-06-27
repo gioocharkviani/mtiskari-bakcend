@@ -23,6 +23,9 @@ export class bookingEntity {
   reference?: string;
   @Column({ nullable: true })
   guestId!: number;
+
+  @Column({ nullable: true, type: "int" })
+  cottageId?: number | null;
   @Column({ nullable: false })
   checkInDate?: string;
   @Column({ nullable: false })

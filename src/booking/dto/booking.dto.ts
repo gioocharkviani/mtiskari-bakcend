@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsInt,
 } from "class-validator";
 
 export class NewBooking {
@@ -35,4 +36,8 @@ export class NewBooking {
   @IsNotEmpty()
   @IsDateString()
   checkOutDate?: string;
+
+  @IsOptional()
+  @IsInt()
+  cottageId?: number;
 }

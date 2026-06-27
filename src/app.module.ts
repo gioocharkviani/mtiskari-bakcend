@@ -12,6 +12,8 @@ import { AuthController } from "./auth/auth.controller";
 import { AuthModule } from "./auth/auth.module";
 import { TokenModule } from "./token/token.module";
 import { ContentModule } from "./content/content.module";
+import { CottageModule } from "./cottage/cottage.module";
+import { SettingsModule } from "./settings/settings.module";
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ContentModule } from "./content/content.module";
     AuthModule,
     TokenModule,
     ContentModule,
+    CottageModule,
+    SettingsModule,
   ],
   controllers: [EmailController, AuthController],
   providers: [ReferenceService],
