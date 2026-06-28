@@ -87,7 +87,7 @@ export class BookingService {
         totalAmount: totalPrice,
         checkInDate: checkIn,
         checkOutDate: checkOut,
-        duration: "",
+        duration: `${reqBookingDays.length} nights`,
         confirmBookingUrl:
           this.configService.get("BOOKING_CONFIRM_URL") +
           CONFIRMATION_TOKEN +
@@ -440,7 +440,7 @@ export class BookingService {
     const reqBookingDays = this.getAllNewBookingDays(checkIn, checkOut);
     await this.saveBookedDay(reqBookingDays, cottageId);
 
-    const totalNight = reqBookingDays.length - 1;
+    const totalNight = reqBookingDays.length;
 
     const newBooking = this.bookingRepository.create({
       checkInDate: checkIn,
