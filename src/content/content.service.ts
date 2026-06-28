@@ -41,6 +41,11 @@ const DEFAULT_CONTENT: Array<{ key: string; en: string; ka: string }> = [
   { key: "booked_label", en: "Not available", ka: "დაკავებულია" },
   { key: "selected_label", en: "Selected", ka: "არჩეული" },
   { key: "available_label", en: "Available", ka: "ხელმისაწვდომი" },
+  {
+    key: "feature_cards",
+    en: '[{"title":"Rooms","icon":"bed","items":["2 Bedrooms","Kitchen","Bathroom","Balcony"]},{"title":"Amenities","icon":"snowflake","items":["Air Conditioning","Heating","Mountain View","All Season Access"]},{"title":"Nature","icon":"mountain","items":["Mountain View","Forest Access","Fresh Air","Peaceful Environment"]}]',
+    ka: '[{"title":"ოთახები","icon":"bed","items":["2 საძინებელი","სამზარეულო","აბაზანა","აივანი"]},{"title":"კომფორტი","icon":"snowflake","items":["კონდიციონერი","გათბობა","მთის ხედი","ყოველი სეზონი"]},{"title":"ბუნება","icon":"mountain","items":["მთის ხედი","ტყეზე გასვლა","სუფთა ჰაერი","მშვიდი გარემო"]}]',
+  },
 ];
 
 @Injectable()
