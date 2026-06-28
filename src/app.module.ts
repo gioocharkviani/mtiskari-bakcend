@@ -15,6 +15,7 @@ import { ContentModule } from "./content/content.module";
 import { CottageModule } from "./cottage/cottage.module";
 import { SettingsModule } from "./settings/settings.module";
 import { ChannelModule } from "./channel/channel.module";
+import { FeatureCardModule } from "./feature-card/feature-card.module";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ChannelModule } from "./channel/channel.module";
     CottageModule,
     SettingsModule,
     ChannelModule,
+    FeatureCardModule,
   ],
   controllers: [EmailController, AuthController],
   providers: [ReferenceService],
