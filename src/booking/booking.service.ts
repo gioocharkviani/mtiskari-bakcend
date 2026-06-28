@@ -215,6 +215,7 @@ export class BookingService {
     const booking = await this.bookingRepository.findOne({ where: { id } });
     if (!booking) throw new BadRequestException("Booking not found");
 
+    const previousStatus = booking.bookingStatus;
     await this.bookingRepository.update({ id }, { bookingStatus: status });
 
     const freedStatuses = [
@@ -233,6 +234,27 @@ export class BookingService {
           .where("date IN (:...dates)", { dates: days })
           .andWhere("cottageId = :cottageId", { cottageId })
           .execute();
+      }
+    }
+
+    // Send confirmation email when admin confirms a booking via the panel
+    if (status === BookingStatus.CONFIRMED && previousStatus !== BookingStatus.CONFIRMED) {
+      const guest = await this.guestRepository.findOne({ where: { id: booking.guestId } });
+      if (guest?.email) {
+        this.emailService
+          .sendBookingConfirmationToCustomer({
+            customerName: guest.firstName || "",
+            customerEmail: guest.email,
+            reference: booking.reference,
+            bookingStatus: "CONFIRMED",
+            checkInDate: booking.checkInDate || "",
+            checkInTime: this.configService.get("CHECK_IN_TIME") || "14:00",
+            checkOutDate: booking.checkOutDate || "",
+            checkOutTime: this.configService.get("CHECK_OUT_TIME") || "12:00",
+            duration: `${booking.totalNights || 0} nights`,
+            totalAmount: booking.totalPrice,
+          })
+          .catch((err) => this.logger.error("Failed to send confirmation email", err));
       }
     }
 
