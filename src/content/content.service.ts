@@ -33,6 +33,14 @@ const DEFAULT_CONTENT: Array<{ key: string; en: string; ka: string }> = [
   { key: "gallery_page_cta_title", en: "Experience Mtiskari in Person", ka: "განიცადეთ მწისქარი პირადად" },
   { key: "gallery_page_cta_desc", en: "These photos capture just a glimpse of what awaits you. Come see the beauty for yourself.", ka: "ეს ფოტოები მხოლოდ ნაწილია იმისა, რაც თქვენ ელოდება. მოდით და ნახეთ სილამაზე თვითონ." },
   { key: "gallery_page_cta_btn", en: "Plan Your Visit", ka: "დაგეგმეთ ვიზიტი" },
+  { key: "price_on_request", en: "Price on request", ka: "ფასი მოთხოვნით" },
+  { key: "calendar_page_title", en: "Availability Calendar", ka: "ხელმისაწვდომობის კალენდარი" },
+  { key: "calendar_page_subtitle", en: "Check available dates before booking", ka: "შეამოწმეთ ხელმისაწვდომი თარიღები დაჯავშნამდე" },
+  { key: "select_cottage_label", en: "Select a cottage", ka: "აირჩიეთ კოტეჯი" },
+  { key: "all_cottages_label", en: "All cottages", ka: "ყველა კოტეჯი" },
+  { key: "booked_label", en: "Not available", ka: "დაკავებულია" },
+  { key: "selected_label", en: "Selected", ka: "არჩეული" },
+  { key: "available_label", en: "Available", ka: "ხელმისაწვდომი" },
 ];
 
 @Injectable()
