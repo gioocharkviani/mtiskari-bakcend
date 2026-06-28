@@ -24,17 +24,11 @@ export class AuthService {
 
   //-----------------------------------------------admin login
   async adminSignIn(data: adminLoginDto) {
-    try {
-      const ADMIN_HASH = await this.configService.get("ADMIN_HASH");
-      const comparePassword = await bcrypt.compare(data.password, ADMIN_HASH);
-      if (!comparePassword) {
-        return new UnauthorizedException();
-      }
-      const token = await this.tokenService.generateAuthToken();
-      return token;
-    } catch (error) {
-      throw new BadRequestException();
-    }
+    const ADMIN_HASH = this.configService.get<string>("ADMIN_HASH");
+    if (!ADMIN_HASH) throw new BadRequestException("Admin password not configured");
+    const comparePassword = await bcrypt.compare(data.password, ADMIN_HASH);
+    if (!comparePassword) throw new UnauthorizedException("Invalid password");
+    return this.tokenService.generateAuthToken();
   }
   //-----------------------------------------------admin login
 

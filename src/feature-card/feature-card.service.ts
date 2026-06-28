@@ -51,11 +51,15 @@ export class FeatureCardService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const count = await this.repo.count();
-    if (count === 0) {
-      for (const card of SEED_CARDS) {
-        await this.repo.save(this.repo.create(card));
+    try {
+      const count = await this.repo.count();
+      if (count === 0) {
+        for (const card of SEED_CARDS) {
+          await this.repo.save(this.repo.create(card));
+        }
       }
+    } catch {
+      console.warn("[FeatureCard] Table missing — run: npm run migration:run");
     }
   }
 
