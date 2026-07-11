@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   Res,
   UseGuards,
 } from "@nestjs/common";
@@ -14,7 +15,7 @@ import { NewBooking } from "./dto/booking.dto";
 import { UpdateStatusDto } from "./dto/updateStatus.dto";
 import { ExternalBookingDto } from "./dto/external-booking.dto";
 import { UpdatePaymentDto } from "./dto/update-payment.dto";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import { AuthGuard } from "src/guards/auth.guard";
 
 @Controller("booking")
@@ -41,6 +42,11 @@ export class BookingController {
   @UseGuards(AuthGuard)
   getStats() {
     return this.bookingService.getStats();
+  }
+
+  @Get("check-ip")
+  checkIp(@Req() req: Request) {
+    return req;
   }
 
   @Get("all")
