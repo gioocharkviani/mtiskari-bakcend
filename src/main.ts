@@ -15,8 +15,20 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
+  const allowedOrigins = [
+    "https://mtiskari.ge",
+    "https://www.mtiskari.ge",
+    "http://localhost:3000",
+  ];
+
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
