@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as nodemailer from "nodemailer";
 import { emailDto } from "./dto/email.dto";
@@ -105,7 +105,7 @@ export class EmailService {
   //------------------------------------------------------SEND NEW BOOKING NOTIFICATION TO ADMIN
 
   async sendBookingNotificationToAdmin(bookingData: any) {
-    const ADMIN = this.configService.get("EMAIL_USER");
+    const ADMIN = this.configService.get("ADMIN_EMAIL");
     const html = await this.renderTemplate("booking-confirmation-admin", {
       customerName: bookingData.customerName,
       customerEmail: bookingData.customerEmail,
@@ -147,7 +147,7 @@ export class EmailService {
     phone?: string;
     message: string;
   }) {
-    const adminEmail = this.configService.get("EMAIL_USER");
+    const adminEmail = this.configService.get("ADMIN_EMAIL");
     const html = `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
         <h2 style="color:#166534;margin-bottom:24px;">New Contact Form Message</h2>
@@ -220,6 +220,7 @@ export class EmailService {
       return "email sent seccessfully";
     } catch (error) {
       console.log("Error sending mail: ", error);
+      throw new InternalServerErrorException("Failed to send email");
     }
   }
 }

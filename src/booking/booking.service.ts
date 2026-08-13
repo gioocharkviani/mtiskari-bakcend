@@ -93,7 +93,9 @@ export class BookingService {
           CONFIRMATION_TOKEN +
           `/${newBooking.id}`,
       };
-      await this.emailService.sendBookingNotificationToAdmin(bookingData);
+      await this.emailService
+        .sendBookingNotificationToAdmin(bookingData)
+        .catch((err) => this.logger.error("Failed to send admin notification email", err));
 
       return newBooking;
     } catch (error) {
@@ -166,9 +168,9 @@ export class BookingService {
         totalAmount: findBooking.totalPrice,
         customerEmail: guest.email,
       };
-      await this.emailService.sendBookingConfirmationToCustomer(
-        confirmationMailData,
-      );
+      await this.emailService
+        .sendBookingConfirmationToCustomer(confirmationMailData)
+        .catch((err) => this.logger.error("Failed to send confirmation email", err));
       return {
         success: true,
         message: "Booking confirmed successfully",

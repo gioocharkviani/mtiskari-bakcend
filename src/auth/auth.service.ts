@@ -53,7 +53,7 @@ export class AuthService {
   //-------------------------------------------------create amin password hash
   async createAdminPasswordHash(data: createAdminHashDto) {
     const ADMIN_HASH = await this.configService.get("ADMIN_HASH");
-    const ADMIN = await this.configService.get("EMAIL_USER");
+    const ADMIN = await this.configService.get("ADMIN_EMAIL");
     const SALT = await this.configService.get("ADMIN_SALT");
     if (ADMIN_HASH) {
       await this.emailService.sendUniversalTemplateEmail({
