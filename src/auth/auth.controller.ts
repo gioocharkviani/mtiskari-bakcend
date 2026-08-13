@@ -22,10 +22,12 @@ export class AuthController {
   ) {
     const token: any = await this.authService.adminSignIn(body);
     const MAXAGE = await this.configService.get("ADMIN_TOKEN_TIME");
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("byAt", token.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      domain: isProd ? ".mtiskari.ge" : undefined,
       maxAge: MAXAGE * 60 * 60 * 1000,
       path: "/",
     });
@@ -49,10 +51,12 @@ export class AuthController {
       isActive: true,
     });
 
+    const isProd = process.env.NODE_ENV === "production";
     res.clearCookie("byAt", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      domain: isProd ? ".mtiskari.ge" : undefined,
       path: "/",
     });
 

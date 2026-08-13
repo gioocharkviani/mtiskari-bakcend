@@ -141,7 +141,12 @@ export class EmailService {
   }
 
   //-----------------------------------------------SEND CONTACT FORM TO ADMIN
-  async sendContactForm(data: { name: string; email: string; phone?: string; message: string }) {
+  async sendContactForm(data: {
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+  }) {
     const adminEmail = this.configService.get("EMAIL_USER");
     const html = `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
