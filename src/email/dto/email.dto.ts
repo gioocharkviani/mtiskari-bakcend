@@ -17,4 +17,7 @@ export class emailDto {
   @IsOptional()
   @IsString()
   text?: string;
+  @IsOptional()
+  @IsString()
+  replyTo?: string;
 }

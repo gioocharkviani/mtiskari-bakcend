@@ -167,6 +167,7 @@ export class EmailService {
       recipients: [adminEmail],
       subject: `Contact form: message from ${data.name}`,
       html,
+      replyTo: data.email,
     });
   }
   //-----------------------------------------------SEND CONTACT FORM TO ADMIN
@@ -205,15 +206,20 @@ export class EmailService {
 
   //--------------------------------------------------- SEND EMAIL
   async sendEmail(dto: emailDto) {
-    const { recipients, subject, html } = dto;
+    const { recipients, subject, html, text, replyTo } = dto;
 
     const transport = this.emailTransport();
 
+    const companyName = this.configService.get("COMPANY_NAME") || "Mtiskari";
+    const plainText = text || html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
     const options: nodemailer.SendMailOptions = {
-      from: this.configService.get("EMAIL_USER"),
+      from: `"${companyName}" <${this.configService.get("EMAIL_USER")}>`,
       to: recipients,
       subject: subject,
       html: html,
+      text: plainText,
+      ...(replyTo && { replyTo }),
     };
     try {
       await transport.sendMail(options);
