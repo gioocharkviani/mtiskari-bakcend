@@ -140,6 +140,35 @@ export class EmailService {
     });
   }
 
+  //------------------------------------------------------SEND BOOKING CANCELLATION TO CUSTOMER
+  async sendBookingCancellationToCustomer(bookingData: any) {
+    const companyName = this.configService.get("COMPANY_NAME") || "Mtiskari";
+    const companyEmail = this.configService.get("COMPANY_EMAIL") || "";
+    const companyPhone = this.configService.get("COMPANY_PHONE") || "";
+    const html = `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
+        <h2 style="color:#dc2626;margin-bottom:24px;">Your Booking Has Been Cancelled</h2>
+        <p style="color:#374151;">Dear ${bookingData.customerName || "Guest"},</p>
+        <p style="color:#374151;">We're sorry to inform you that your booking has been cancelled by our team. Details below:</p>
+        <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+          <tr><td style="padding:8px 0;color:#6b7280;width:160px;font-weight:600;">Booking Reference</td><td style="padding:8px 0;color:#111827;">${bookingData.reference || ""}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Check-in</td><td style="padding:8px 0;color:#111827;">${bookingData.checkInDate || ""}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Check-out</td><td style="padding:8px 0;color:#111827;">${bookingData.checkOutDate || ""}</td></tr>
+        </table>
+        <p style="color:#374151;">If you have any questions or believe this was a mistake, please contact us at
+          <a href="mailto:${companyEmail}" style="color:#166534;">${companyEmail}</a>${companyPhone ? ` or ${companyPhone}` : ""}.
+        </p>
+        <p style="margin-top:24px;color:#9ca3af;font-size:12px;">${companyName}</p>
+      </div>
+    `;
+    return this.sendEmail({
+      recipients: [bookingData.customerEmail],
+      subject: `Booking Cancelled - ${bookingData.reference || ""}`,
+      html,
+    });
+  }
+  //------------------------------------------------------SEND BOOKING CANCELLATION TO CUSTOMER
+
   //-----------------------------------------------SEND CONTACT FORM TO ADMIN
   async sendContactForm(data: {
     name: string;

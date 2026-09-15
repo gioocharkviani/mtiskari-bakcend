@@ -17,10 +17,14 @@ import { ExternalBookingDto } from "./dto/external-booking.dto";
 import { UpdatePaymentDto } from "./dto/update-payment.dto";
 import type { Request, Response } from "express";
 import { AuthGuard } from "src/guards/auth.guard";
+import { ConfigService } from "@nestjs/config";
 
 @Controller("booking")
 export class BookingController {
-  constructor(private readonly bookingService: BookingService) {}
+  constructor(
+    private readonly bookingService: BookingService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post("new")
   newBooking(@Body() newBookingDto: NewBooking) {
@@ -33,8 +37,13 @@ export class BookingController {
     @Param("id") id: string,
     @Res() res: Response,
   ) {
-    await this.bookingService.bookingConfirmation(token, id);
-    res.redirect("https://mtiskari.vercel.app/");
+    const adminUrl = this.configService.get("ADMIN_URL") || "https://mtiskari.ge/admin";
+    try {
+      await this.bookingService.bookingConfirmation(token, id);
+      res.redirect(`${adminUrl}/bookings?confirmed=${id}`);
+    } catch (error) {
+      res.redirect(`${adminUrl}/bookings?confirmError=${id}`);
+    }
   }
 
   // Admin endpoints

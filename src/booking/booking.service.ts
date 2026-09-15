@@ -260,6 +260,22 @@ export class BookingService {
       }
     }
 
+    // Notify customer by email when admin cancels their booking
+    if (status === BookingStatus.CANCELLED && previousStatus !== BookingStatus.CANCELLED) {
+      const guest = await this.guestRepository.findOne({ where: { id: booking.guestId } });
+      if (guest?.email) {
+        this.emailService
+          .sendBookingCancellationToCustomer({
+            customerName: guest.firstName || "",
+            customerEmail: guest.email,
+            reference: booking.reference,
+            checkInDate: booking.checkInDate || "",
+            checkOutDate: booking.checkOutDate || "",
+          })
+          .catch((err) => this.logger.error("Failed to send cancellation email", err));
+      }
+    }
+
     return { success: true, message: `Booking status updated to ${status}` };
   }
   //---------------------------------------------------------------------ADMIN: UPDATE BOOKING STATUS
