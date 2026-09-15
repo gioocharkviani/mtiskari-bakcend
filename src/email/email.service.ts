@@ -71,34 +71,31 @@ export class EmailService {
 
   //------------------------------------------------------SEND BOOKING CONFIRMATION
   async sendBookingConfirmationToCustomer(bookingData: any) {
-    const html = await this.renderTemplate("booking-confirmation-customer", {
-      customerName: bookingData.customerName,
-      bookingReference: bookingData.reference,
-      bookingStatus: bookingData.bookingStatus || "CONFIRMED",
-      checkInDate: bookingData.checkInDate,
-      checkInTime: bookingData.checkInTime,
-      checkOutDate: bookingData.checkOutDate,
-      checkOutTime: bookingData.checkOutTime,
-      duration: bookingData.duration,
-      bookingDetails: bookingData.details || [],
-      totalAmount: bookingData.totalAmount,
-      viewBookingUrl:
-        bookingData.viewBookingUrl ||
-        `${this.configService.get("APP_URL")}/bookings/${bookingData.id}`,
-      addToCalendarUrl: bookingData.addToCalendarUrl || "#",
-      companyName: this.configService.get("COMPANY_NAME") || "Our Company",
-      companyAddress:
-        this.configService.get("COMPANY_ADDRESS") || "123 Main Street",
-      companyPhone:
-        this.configService.get("COMPANY_PHONE") || "+1 234 567 8900",
-      companyEmail:
-        this.configService.get("COMPANY_EMAIL") || "support@example.com",
-    });
-
+    const companyName = this.configService.get("COMPANY_NAME") || "Mtiskari";
+    const companyEmail = this.configService.get("COMPANY_EMAIL") || "";
+    const companyPhone = this.configService.get("COMPANY_PHONE") || "";
+    const html = `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
+        <h2 style="color:#166534;margin-bottom:24px;">Your Booking Is Confirmed</h2>
+        <p style="color:#374151;">Dear ${bookingData.customerName || "Guest"},</p>
+        <p style="color:#374151;">Great news — your booking has been confirmed. Details below:</p>
+        <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+          <tr><td style="padding:8px 0;color:#6b7280;width:160px;font-weight:600;">Booking Reference</td><td style="padding:8px 0;color:#111827;">${bookingData.reference || ""}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Check-in</td><td style="padding:8px 0;color:#111827;">${bookingData.checkInDate || ""}${bookingData.checkInTime ? ` (${bookingData.checkInTime})` : ""}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Check-out</td><td style="padding:8px 0;color:#111827;">${bookingData.checkOutDate || ""}${bookingData.checkOutTime ? ` (${bookingData.checkOutTime})` : ""}</td></tr>
+          ${bookingData.duration ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Duration</td><td style="padding:8px 0;color:#111827;">${bookingData.duration}</td></tr>` : ""}
+          ${bookingData.totalAmount ? `<tr><td style="padding:8px 0;color:#6b7280;font-weight:600;">Total</td><td style="padding:8px 0;color:#111827;">${bookingData.totalAmount}</td></tr>` : ""}
+        </table>
+        <p style="color:#374151;">If you have any questions, please contact us at
+          <a href="mailto:${companyEmail}" style="color:#166534;">${companyEmail}</a>${companyPhone ? ` or ${companyPhone}` : ""}.
+        </p>
+        <p style="margin-top:24px;color:#9ca3af;font-size:12px;">${companyName}</p>
+      </div>
+    `;
     return this.sendEmail({
       recipients: [bookingData.customerEmail],
       subject: `Booking Confirmed - ${bookingData.reference}`,
-      html: html,
+      html,
     });
   }
 
